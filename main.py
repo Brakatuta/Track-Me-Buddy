@@ -11,45 +11,18 @@ from datetime import datetime, timedelta
 from enum import Enum
 import sys
 
-# ── Base directory & save folder ─────────────────────────────────────────────
-# Works correctly both as a plain .py script and when bundled with
-# auto-py-to-exe / PyInstaller (which sets sys.frozen and puts the exe
-# path in sys.executable).
-
-def _get_base_dir() -> Path:
-    if getattr(sys, "frozen", False):
-        return Path(sys.executable).resolve().parent
-    return Path(__file__).resolve().parent
-
-def _get_save_dir() -> Path:
-    save_dir = _get_base_dir() / "save"
-    save_dir.mkdir(exist_ok=True)
-    return save_dir
-
 # ── NovaTime integration ──────────────────────────────────────────────────────
-try:
-    from NovaTime import nova as nova
-    NOVA_AVAILABLE = True
-except ImportError:
-    NOVA_AVAILABLE = False
-    print("[WARN] novatime.py not found – API integration disabled")
+from NovaTime import nova as nova
 
-# ── Optional deps ─────────────────────────────────────────────────────────────
-try:
-    import pystray
-    from PIL import Image as PilImage
-    TRAY_AVAILABLE = True
-except ImportError:
-    TRAY_AVAILABLE = False
-    print("[WARN] pystray / Pillow not installed.  Run: pip install pystray pillow")
+# ── extra deps ────────────────────────────────────────────────────────────────
+import pystray
+from PIL import Image as PilImage
 
-try:
-    from plyer import notification as plyer_notify
-    NOTIFY_AVAILABLE = True
-except ImportError:
-    NOTIFY_AVAILABLE = False
-    print("[WARN] plyer not installed.  Run: pip install plyer")
+from plyer import notification as plyer_notify
 
+NOVA_AVAILABLE = True
+TRAY_AVAILABLE = True
+NOTIFY_AVAILABLE = True
 
 # ── Colours ───────────────────────────────────────────────────────────────────
 class Color(Enum):
@@ -66,6 +39,20 @@ class Color(Enum):
     DIENSTGANG = "#0b7236"
     API        = "#2e86ab"
 
+# ── Base directory & save folder ─────────────────────────────────────────────
+# Works correctly both as a plain .py script and when bundled with
+# auto-py-to-exe / PyInstaller (which sets sys.frozen and puts the exe
+# path in sys.executable).
+
+def _get_base_dir() -> Path:
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent
+
+def _get_save_dir() -> Path:
+    save_dir = _get_base_dir() / "save"
+    save_dir.mkdir(exist_ok=True)
+    return save_dir
 
 # ── NovaTime API config (separate file) ───────────────────────────────────────
 class NovaConfig:
@@ -907,26 +894,129 @@ class TrackMe:
         bf = tk.Frame(win, bg=Color.BACKGROUND.value)
         bf.pack(pady=(14, 6), padx=20)
 
-        def finish_day():
-            if not self.tracker.start_time_stamp:
-                messagebox.showinfo("No Session", "No active tracking session.")
+        def open_already_checked_in():
+            """Open a dialog to retroactively set today's check-in time (migration helper)."""
+            if self.tracker.start_time_stamp > 0:
+                messagebox.showinfo(
+                    "Already Running",
+                    "There is already an active tracking session.\n"
+                    "Stop it first before using 'Already Checked In'."
+                )
                 return
-            if messagebox.askyesno("Finish Day", "Save today's balance and reset?"):
-                self.tracker.end_open_pause()
-                now       = time.time()
-                tp        = self.tracker.get_total_pause_duration()
-                work_time = (now - self.tracker.start_time_stamp) - tp
-                diff      = work_time - self.tracker.daily_goal * 3600
-                diff     += self.tracker.daily_credit_mins * 60
-                self.tracker.total_balance_seconds += diff
-                self.tracker.reset_values()
-                self.tracker.save_data()
-                win.destroy()
 
-        tk.Button(bf, text="Finish Day & Save Balance",
-                  bg=Color.PAUSE.value, fg=Color.TEXT.value,
+            dlg = tk.Toplevel(win)
+            dlg.title("Already Checked In")
+            dlg.config(bg=Color.BACKGROUND.value)
+            dlg.resizable(False, False)
+            dlg.grab_set()
+            if os.path.exists(self.icon_ico):
+                try: dlg.iconbitmap(self.icon_ico)
+                except Exception: pass
+
+            BG2  = Color.BACKGROUND.value
+            FG2  = Color.TEXT.value
+            ACC2 = Color.ACCENT.value
+
+            tk.Label(dlg, text="Already Checked In",
+                     bg=BG2, fg=ACC2, font=("Arial", 13, "bold")
+                     ).pack(pady=(18, 2), padx=24, anchor="w")
+            tk.Label(dlg, text="Set the time you actually clocked in today.\n"
+                               "No API call will be made – local data only.",
+                     bg=BG2, fg="#aaaaaa", font=("Arial", 9)
+                     ).pack(pady=(0, 6), padx=24, anchor="w")
+            tk.Frame(dlg, bg=Color.BUTTON.value, height=1).pack(fill=tk.X, padx=24, pady=(0, 12))
+
+            # Determine sensible default: current time
+            now_dt = datetime.now()
+            hour_var   = tk.IntVar(value=now_dt.hour)
+            minute_var = tk.IntVar(value=(now_dt.minute // 5) * 5)
+
+            time_disp = tk.Label(dlg, text="", bg=BG2, fg=ACC2,
+                                 font=("Arial", 22, "bold"))
+            time_disp.pack(pady=(0, 8))
+
+            def refresh_disp(*_):
+                time_disp.config(
+                    text=f"{hour_var.get():02d}:{minute_var.get():02d} Uhr"
+                )
+
+            # Hour slider
+            tk.Label(dlg, text="Hour", bg=BG2, fg=FG2,
+                     font=("Arial", 10)).pack(padx=24, anchor="w")
+            tk.Scale(dlg, variable=hour_var, from_=0, to=23, resolution=1,
+                     orient=tk.HORIZONTAL, bg=BG2, fg=FG2,
+                     troughcolor="#333", highlightthickness=0,
+                     showvalue=True, length=260
+                     ).pack(padx=24, pady=(0, 10))
+
+            # Minute slider (5-min steps)
+            tk.Label(dlg, text="Minute", bg=BG2, fg=FG2,
+                     font=("Arial", 10)).pack(padx=24, anchor="w")
+            tk.Scale(dlg, variable=minute_var, from_=0, to=55, resolution=5,
+                     orient=tk.HORIZONTAL, bg=BG2, fg=FG2,
+                     troughcolor="#333", highlightthickness=0,
+                     showvalue=True, length=260
+                     ).pack(padx=24, pady=(0, 12))
+
+            hour_var.trace_add("write",   refresh_disp)
+            minute_var.trace_add("write", refresh_disp)
+            refresh_disp()
+
+            tk.Frame(dlg, bg=Color.BUTTON.value, height=1).pack(fill=tk.X, padx=24, pady=(0, 10))
+
+            def confirm():
+                today = datetime.now().date()
+                checkin_dt = datetime(
+                    today.year, today.month, today.day,
+                    hour_var.get(), minute_var.get(), 0
+                )
+                checkin_ts = checkin_dt.timestamp()
+                if checkin_ts > time.time():
+                    messagebox.showwarning(
+                        "Future time",
+                        "The check-in time you selected is in the future.\n"
+                        "Please choose an earlier time.",
+                        parent=dlg
+                    )
+                    return
+                # Set the start timestamp retroactively – no API call
+                self.tracker.start_time_stamp = checkin_ts
+                self.tracker.is_in_pause      = False
+                self.tracker.pauses           = []
+                self.tracker.is_on_dienstgang = False
+                self._notified_work_done      = False
+                self._notified_pause_done     = False
+                self._notified_pause_warn     = False
+                self.tracker.save_data()
+                dlg.destroy()
+                messagebox.showinfo(
+                    "Check-In Set",
+                    f"Check-in time set to {checkin_dt.strftime('%H:%M Uhr')}.\n"
+                    "Session is now active (local only – no API call made)."
+                )
+
+            btn_row2 = tk.Frame(dlg, bg=BG2)
+            btn_row2.pack(pady=(0, 18), padx=24)
+
+            tk.Button(btn_row2, text="✔  Confirm",
+                      bg=Color.ACCENT.value, fg=FG2,
+                      font=("Arial", 11, "bold"), bd=0, padx=20, pady=8,
+                      command=confirm).pack(side="left", padx=(0, 8))
+            tk.Button(btn_row2, text="Cancel",
+                      bg=Color.BUTTON.value, fg=FG2,
+                      font=("Arial", 11), bd=0, padx=20, pady=8,
+                      command=dlg.destroy).pack(side="left")
+
+            # Centre the dialog over the settings window
+            dlg.update_idletasks()
+            wx = win.winfo_x() + (win.winfo_width()  - dlg.winfo_reqwidth())  // 2
+            wy = win.winfo_y() + (win.winfo_height() - dlg.winfo_reqheight()) // 2
+            dlg.geometry(f"+{max(0,wx)}+{max(0,wy)}")
+
+        tk.Button(bf, text="⏱  Already Checked In",
+                  bg=Color.ACCENT.value, fg=Color.TEXT.value,
                   font=("Arial", 10, "bold"), bd=0, padx=10, pady=6,
-                  command=finish_day).pack(fill=tk.X, pady=3)
+                  command=open_already_checked_in).pack(fill=tk.X, pady=3)
 
         def hard_reset():
             if messagebox.askyesno("Hard Reset",
