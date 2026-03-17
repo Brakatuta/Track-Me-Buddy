@@ -863,19 +863,183 @@ class TrackMe:
             upd()
             return upd
 
-        def fmt_hhmm(v):
-            h = int(v); m = round((v - h) * 60)
-            return f"{h:02d}:{m:02d} h"
+        def hhmm_slider_row(parent, label, var_hours, from_h, to_h, color):
+            """Slider row for HH:MM values with separate hour+minute spinboxes."""
+            BG  = Color.BACKGROUND.value
+            FG  = Color.TEXT.value
+
+            tk.Label(parent, text=label, bg=BG, fg=FG,
+                     font=("Arial", 10)).pack(pady=(12, 0))
+
+            row_frame = tk.Frame(parent, bg=BG)
+            row_frame.pack()
+
+            disp = tk.Label(row_frame, text="", bg=BG, fg=color,
+                            font=("Arial", 13, "bold"), width=9)
+            disp.pack(side="left", padx=(0, 10))
+
+            # Spinbox hour
+            tk.Label(row_frame, text="h", bg=BG, fg=FG,
+                     font=("Arial", 9)).pack(side="left")
+            sb_h = tk.Spinbox(row_frame, from_=int(from_h), to=int(to_h),
+                              width=3, font=("Arial", 11),
+                              bg=Color.FOREGROUND.value, fg=FG,
+                              buttonbackground=Color.BUTTON.value,
+                              insertbackground=FG, relief="flat")
+            sb_h.pack(side="left", padx=(2, 6))
+
+            # Spinbox minute
+            tk.Label(row_frame, text="min", bg=BG, fg=FG,
+                     font=("Arial", 9)).pack(side="left")
+            sb_m = tk.Spinbox(row_frame, from_=0, to=59, width=3,
+                              font=("Arial", 11),
+                              bg=Color.FOREGROUND.value, fg=FG,
+                              buttonbackground=Color.BUTTON.value,
+                              insertbackground=FG, relief="flat")
+            sb_m.pack(side="left", padx=(2, 0))
+
+            _updating = [False]
+
+            def _refresh_disp(*_):
+                v = var_hours.get()
+                h = int(v)
+                m = round((v - h) * 60)
+                disp.config(text=f"{h:02d}:{m:02d} h")
+
+            def _slider_to_spin(*_):
+                if _updating[0]: return
+                _updating[0] = True
+                v = var_hours.get()
+                h = int(v)
+                m = round((v - h) * 60)
+                sb_h.delete(0, "end"); sb_h.insert(0, str(h))
+                sb_m.delete(0, "end"); sb_m.insert(0, str(m))
+                _refresh_disp()
+                _updating[0] = False
+
+            def _spin_to_slider(*_):
+                if _updating[0]: return
+                _updating[0] = True
+                try:
+                    h = max(int(from_h), min(int(to_h), int(sb_h.get())))
+                    m = max(0, min(59, int(sb_m.get())))
+                except ValueError:
+                    _updating[0] = False
+                    return
+                var_hours.set(round(h + m / 60, 10))
+                _refresh_disp()
+                _updating[0] = False
+
+            var_hours.trace_add("write", _slider_to_spin)
+            sb_h.config(command=_spin_to_slider)
+            sb_m.config(command=_spin_to_slider)
+            sb_h.bind("<FocusOut>", _spin_to_slider)
+            sb_h.bind("<Return>",   _spin_to_slider)
+            sb_m.bind("<FocusOut>", _spin_to_slider)
+            sb_m.bind("<Return>",   _spin_to_slider)
+
+            tk.Scale(parent, variable=var_hours, from_=from_h, to=to_h,
+                     resolution=1/60, orient=tk.HORIZONTAL,
+                     bg=BG, fg=FG, highlightthickness=0,
+                     showvalue=False, length=220
+                     ).pack(padx=30, pady=(0, 2))
+
+            # Initialise spinboxes from current var value
+            _slider_to_spin()
+            return _refresh_disp
+
+        def pause_slider_row(parent, label, var_mins, color):
+            """Slider row for minute values with separate hour+minute spinboxes."""
+            BG  = Color.BACKGROUND.value
+            FG  = Color.TEXT.value
+
+            tk.Label(parent, text=label, bg=BG, fg=FG,
+                     font=("Arial", 10)).pack(pady=(12, 0))
+
+            row_frame = tk.Frame(parent, bg=BG)
+            row_frame.pack()
+
+            disp = tk.Label(row_frame, text="", bg=BG, fg=color,
+                            font=("Arial", 13, "bold"), width=9)
+            disp.pack(side="left", padx=(0, 10))
+
+            tk.Label(row_frame, text="h", bg=BG, fg=FG,
+                     font=("Arial", 9)).pack(side="left")
+            sb_h = tk.Spinbox(row_frame, from_=0, to=1, width=3,
+                              font=("Arial", 11),
+                              bg=Color.FOREGROUND.value, fg=FG,
+                              buttonbackground=Color.BUTTON.value,
+                              insertbackground=FG, relief="flat")
+            sb_h.pack(side="left", padx=(2, 6))
+
+            tk.Label(row_frame, text="min", bg=BG, fg=FG,
+                     font=("Arial", 9)).pack(side="left")
+            sb_m = tk.Spinbox(row_frame, from_=0, to=59, width=3,
+                              font=("Arial", 11),
+                              bg=Color.FOREGROUND.value, fg=FG,
+                              buttonbackground=Color.BUTTON.value,
+                              insertbackground=FG, relief="flat")
+            sb_m.pack(side="left", padx=(2, 0))
+
+            _updating = [False]
+
+            def _refresh_disp(*_):
+                total = var_mins.get()
+                h = int(total) // 60
+                m = int(total) % 60
+                disp.config(text=f"{total:.0f} min")
+
+            def _slider_to_spin(*_):
+                if _updating[0]: return
+                _updating[0] = True
+                total = int(round(var_mins.get()))
+                h = total // 60
+                m = total % 60
+                sb_h.delete(0, "end"); sb_h.insert(0, str(h))
+                sb_m.delete(0, "end"); sb_m.insert(0, str(m))
+                _refresh_disp()
+                _updating[0] = False
+
+            def _spin_to_slider(*_):
+                if _updating[0]: return
+                _updating[0] = True
+                try:
+                    h = max(0, min(1, int(sb_h.get())))
+                    m = max(0, min(59, int(sb_m.get())))
+                except ValueError:
+                    _updating[0] = False
+                    return
+                total = h * 60 + m
+                var_mins.set(min(90, total))
+                _refresh_disp()
+                _updating[0] = False
+
+            var_mins.trace_add("write", _slider_to_spin)
+            sb_h.config(command=_spin_to_slider)
+            sb_m.config(command=_spin_to_slider)
+            sb_h.bind("<FocusOut>", _spin_to_slider)
+            sb_h.bind("<Return>",   _spin_to_slider)
+            sb_m.bind("<FocusOut>", _spin_to_slider)
+            sb_m.bind("<Return>",   _spin_to_slider)
+
+            tk.Scale(parent, variable=var_mins, from_=0, to=90,
+                     resolution=1, orient=tk.HORIZONTAL,
+                     bg=BG, fg=FG, highlightthickness=0,
+                     showvalue=False, length=220
+                     ).pack(padx=30, pady=(0, 2))
+
+            _slider_to_spin()
+            return _refresh_disp
 
         goal_var   = tk.DoubleVar(value=self.tracker.daily_goal)
         pause_var  = tk.DoubleVar(value=self.tracker.default_pause_mins)
         credit_var = tk.DoubleVar(value=self.tracker.daily_credit_mins)
         warn_var   = tk.DoubleVar(value=self.tracker.pause_warn_before_mins)
 
-        slider_row(win, "Daily Work Goal:",          goal_var,  1.0, 12.0, 0.25,
-                   fmt_hhmm, Color.OVERTIME.value)
-        slider_row(win, "Required Base Pause:",       pause_var, 0,   90,   5,
-                   lambda v: f"{int(v)} min", Color.PAUSE.value)
+        hhmm_slider_row(win, "Daily Work Goal:",       goal_var,  1.0, 12.0,
+                        Color.OVERTIME.value)
+        pause_slider_row(win, "Required Base Pause:",  pause_var,
+                         Color.PAUSE.value)
         slider_row(win, "Daily Credit (per day):",    credit_var,0,   60,   1,
                    lambda v: f"{int(v)} min", Color.ACCENT.value)
         slider_row(win, "Pause warning (before 6h):", warn_var,  0,   60,   1,
@@ -929,7 +1093,7 @@ class TrackMe:
             # Determine sensible default: current time
             now_dt = datetime.now()
             hour_var   = tk.IntVar(value=now_dt.hour)
-            minute_var = tk.IntVar(value=(now_dt.minute // 5) * 5)
+            minute_var = tk.IntVar(value=now_dt.minute)
 
             time_disp = tk.Label(dlg, text="", bg=BG2, fg=ACC2,
                                  font=("Arial", 22, "bold"))
@@ -949,10 +1113,10 @@ class TrackMe:
                      showvalue=True, length=260
                      ).pack(padx=24, pady=(0, 10))
 
-            # Minute slider (5-min steps)
+            # Minute slider (1-min steps)
             tk.Label(dlg, text="Minute", bg=BG2, fg=FG2,
                      font=("Arial", 10)).pack(padx=24, anchor="w")
-            tk.Scale(dlg, variable=minute_var, from_=0, to=55, resolution=5,
+            tk.Scale(dlg, variable=minute_var, from_=0, to=59, resolution=1,
                      orient=tk.HORIZONTAL, bg=BG2, fg=FG2,
                      troughcolor="#333", highlightthickness=0,
                      showvalue=True, length=260
@@ -1017,6 +1181,161 @@ class TrackMe:
                   bg=Color.ACCENT.value, fg=Color.TEXT.value,
                   font=("Arial", 10, "bold"), bd=0, padx=10, pady=6,
                   command=open_already_checked_in).pack(fill=tk.X, pady=3)
+
+        def open_correct_pause():
+            """Open a dialog to retroactively add a pause to the current session (migration helper)."""
+            if not self.tracker.start_time_stamp:
+                messagebox.showinfo(
+                    "No Session",
+                    "No active tracking session.\nStart or check in first."
+                )
+                return
+
+            dlg = tk.Toplevel(win)
+            dlg.title("Correct Pause")
+            dlg.config(bg=Color.BACKGROUND.value)
+            dlg.resizable(False, False)
+            dlg.grab_set()
+            if os.path.exists(self.icon_ico):
+                try: dlg.iconbitmap(self.icon_ico)
+                except Exception: pass
+
+            BG2  = Color.BACKGROUND.value
+            FG2  = Color.TEXT.value
+            PAU  = Color.PAUSE.value
+
+            tk.Label(dlg, text="Correct Pause",
+                     bg=BG2, fg=PAU, font=("Arial", 13, "bold")
+                     ).pack(pady=(18, 2), padx=24, anchor="w")
+            tk.Label(dlg, text="Add a missed pause to the current session.\n"
+                               "No API call will be made – local data only.",
+                     bg=BG2, fg="#aaaaaa", font=("Arial", 9)
+                     ).pack(pady=(0, 6), padx=24, anchor="w")
+            tk.Frame(dlg, bg=Color.BUTTON.value, height=1).pack(fill=tk.X, padx=24, pady=(0, 14))
+
+            # ── Duration picker ───────────────────────────────────────────────
+            pause_mins_var = tk.IntVar(value=30)
+            _upd_lock = [False]
+
+            dur_disp = tk.Label(dlg, text="", bg=BG2, fg=PAU,
+                                font=("Arial", 22, "bold"))
+            dur_disp.pack(pady=(0, 10))
+
+            def _refresh_dur(*_):
+                total = pause_mins_var.get()
+                h = total // 60
+                m = total % 60
+                dur_disp.config(text=f"{h:01d}h {m:02d}min")
+
+            # Spinbox row
+            spin_frame = tk.Frame(dlg, bg=BG2)
+            spin_frame.pack(pady=(0, 6))
+
+            tk.Label(spin_frame, text="h", bg=BG2, fg=FG2,
+                     font=("Arial", 10)).pack(side="left")
+            sb_h = tk.Spinbox(spin_frame, from_=0, to=1, width=3,
+                              font=("Arial", 12),
+                              bg=Color.FOREGROUND.value, fg=FG2,
+                              buttonbackground=Color.BUTTON.value,
+                              insertbackground=FG2, relief="flat")
+            sb_h.pack(side="left", padx=(2, 10))
+
+            tk.Label(spin_frame, text="min", bg=BG2, fg=FG2,
+                     font=("Arial", 10)).pack(side="left")
+            sb_m = tk.Spinbox(spin_frame, from_=0, to=59, width=3,
+                              font=("Arial", 12),
+                              bg=Color.FOREGROUND.value, fg=FG2,
+                              buttonbackground=Color.BUTTON.value,
+                              insertbackground=FG2, relief="flat")
+            sb_m.pack(side="left", padx=(2, 0))
+
+            # Slider (1 min – 90 min)
+            tk.Label(dlg, text="Duration (1 min – 1h 30min)", bg=BG2, fg=FG2,
+                     font=("Arial", 9)).pack(padx=24, anchor="w")
+            pause_slider = tk.Scale(dlg, variable=pause_mins_var,
+                                    from_=1, to=90, resolution=1,
+                                    orient=tk.HORIZONTAL, bg=BG2, fg=FG2,
+                                    troughcolor="#333", highlightthickness=0,
+                                    showvalue=False, length=260)
+            pause_slider.pack(padx=24, pady=(2, 14))
+
+            def _slider_to_spin(*_):
+                if _upd_lock[0]: return
+                _upd_lock[0] = True
+                total = pause_mins_var.get()
+                sb_h.delete(0, "end"); sb_h.insert(0, str(total // 60))
+                sb_m.delete(0, "end"); sb_m.insert(0, str(total % 60))
+                _refresh_dur()
+                _upd_lock[0] = False
+
+            def _spin_to_slider(*_):
+                if _upd_lock[0]: return
+                _upd_lock[0] = True
+                try:
+                    h = max(0, min(1, int(sb_h.get())))
+                    m = max(0, min(59, int(sb_m.get())))
+                except ValueError:
+                    _upd_lock[0] = False
+                    return
+                total = max(1, min(90, h * 60 + m))
+                pause_mins_var.set(total)
+                _refresh_dur()
+                _upd_lock[0] = False
+
+            pause_mins_var.trace_add("write", _slider_to_spin)
+            sb_h.config(command=_spin_to_slider)
+            sb_m.config(command=_spin_to_slider)
+            sb_h.bind("<FocusOut>", _spin_to_slider)
+            sb_h.bind("<Return>",   _spin_to_slider)
+            sb_m.bind("<FocusOut>", _spin_to_slider)
+            sb_m.bind("<Return>",   _spin_to_slider)
+
+            # Initialise spinboxes
+            _slider_to_spin()
+
+            tk.Frame(dlg, bg=Color.BUTTON.value, height=1).pack(fill=tk.X, padx=24, pady=(0, 10))
+
+            def confirm_pause():
+                duration_secs = pause_mins_var.get() * 60
+                now_ts = time.time()
+                pause_start = now_ts - duration_secs
+                # Make sure the pause doesn't start before the session itself
+                if pause_start < self.tracker.start_time_stamp:
+                    pause_start = self.tracker.start_time_stamp
+                # Add the pause as a completed entry
+                self.tracker.pauses.append([pause_start, now_ts])
+                self.tracker.save_data()
+                dlg.destroy()
+                h = pause_mins_var.get() // 60
+                m = pause_mins_var.get() % 60
+                messagebox.showinfo(
+                    "Pause Added",
+                    f"A pause of {h}h {m:02d}min has been added to today's session.\n"
+                    "No API call was made."
+                )
+
+            btn_row3 = tk.Frame(dlg, bg=BG2)
+            btn_row3.pack(pady=(0, 18), padx=24)
+
+            tk.Button(btn_row3, text="✔  Confirm",
+                      bg=PAU, fg=FG2,
+                      font=("Arial", 11, "bold"), bd=0, padx=20, pady=8,
+                      command=confirm_pause).pack(side="left", padx=(0, 8))
+            tk.Button(btn_row3, text="Cancel",
+                      bg=Color.BUTTON.value, fg=FG2,
+                      font=("Arial", 11), bd=0, padx=20, pady=8,
+                      command=dlg.destroy).pack(side="left")
+
+            # Centre dialog over settings window
+            dlg.update_idletasks()
+            wx = win.winfo_x() + (win.winfo_width()  - dlg.winfo_reqwidth())  // 2
+            wy = win.winfo_y() + (win.winfo_height() - dlg.winfo_reqheight()) // 2
+            dlg.geometry(f"+{max(0,wx)}+{max(0,wy)}")
+
+        tk.Button(bf, text="☕  Correct Pause",
+                  bg=Color.PAUSE.value, fg=Color.TEXT.value,
+                  font=("Arial", 10, "bold"), bd=0, padx=10, pady=6,
+                  command=open_correct_pause).pack(fill=tk.X, pady=3)
 
         def hard_reset():
             if messagebox.askyesno("Hard Reset",
