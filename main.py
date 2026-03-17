@@ -268,8 +268,8 @@ class TrackMe:
         menu = pystray.Menu(
             pystray.MenuItem("Open Track Me Buddy", self._tray_open, default=True),
             pystray.Menu.SEPARATOR,
-            pystray.MenuItem("Start Work",     self._tray_start_work),
-            pystray.MenuItem("Pause / Resume", self._tray_toggle_pause),
+            pystray.MenuItem("Clock In / Clock Out",     self._tray_start_work),
+            pystray.MenuItem("Break / Resume", self._tray_toggle_pause),
             pystray.MenuItem("Dienstgang",     self._tray_toggle_dienstgang),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem("Quit", self._tray_quit),
@@ -442,7 +442,7 @@ class TrackMe:
 
         BTN_W = 18
 
-        self.start_button = tk.Button(self.btn_frame, text="Start Work",
+        self.start_button = tk.Button(self.btn_frame, text="Clock In",
                                       bg=Color.BUTTON.value, fg=Color.TEXT.value,
                                       command=self.handle_start_stop,
                                       font=("Arial", 11, "bold"), width=BTN_W, pady=10)
@@ -457,7 +457,7 @@ class TrackMe:
         )
         self.dienstgang_button.pack(side="left", padx=6)
 
-        self.pause_button = tk.Button(self.btn_frame, text="Pause",
+        self.pause_button = tk.Button(self.btn_frame, text="Break",
                                       bg=Color.BUTTON.value, fg=Color.TEXT.value,
                                       command=self.handle_pause_click,
                                       font=("Arial", 11, "bold"), width=BTN_W, pady=10)
@@ -553,17 +553,17 @@ class TrackMe:
 
     def update_start_button(self):
         if self.tracker.start_time_stamp > 0:
-            self.start_button.config(text="Stop Work", bg=Color.STOP.value)
+            self.start_button.config(text="Clock Out", bg=Color.STOP.value)
         else:
-            self.start_button.config(text="Start Work", bg=Color.BUTTON.value)
+            self.start_button.config(text="Clock In", bg=Color.BUTTON.value)
 
     def update_pause_button_text(self):
         if self.tracker.is_in_pause:
-            self.pause_button.config(text="End Pause", bg=Color.PAUSE.value,
+            self.pause_button.config(text="End Break", bg=Color.PAUSE.value,
                                      state="normal", fg=Color.TEXT.value)
             self.dienstgang_button.config(state="disabled", fg="#888888")
         else:
-            self.pause_button.config(text="Pause", bg=Color.BUTTON.value,
+            self.pause_button.config(text="Break", bg=Color.BUTTON.value,
                                      fg=Color.TEXT.value)
             if not self.tracker.is_on_dienstgang:
                 self.dienstgang_button.config(state="normal", fg=Color.TEXT.value)
@@ -1038,11 +1038,11 @@ class TrackMe:
 
         hhmm_slider_row(win, "Daily Work Goal:",       goal_var,  1.0, 12.0,
                         Color.OVERTIME.value)
-        pause_slider_row(win, "Required Base Pause:",  pause_var,
+        pause_slider_row(win, "Required Base Break:",  pause_var,
                          Color.PAUSE.value)
         slider_row(win, "Daily Credit (per day):",    credit_var,0,   60,   1,
                    lambda v: f"{int(v)} min", Color.ACCENT.value)
-        slider_row(win, "Pause warning (before 6h):", warn_var,  0,   60,   1,
+        slider_row(win, "Break warning (before 6h):", warn_var,  0,   60,   1,
                    lambda v: f"{int(v)} min before", Color.NEGATIVE.value)
 
         def apply(*_):
@@ -1183,7 +1183,7 @@ class TrackMe:
                   command=open_already_checked_in).pack(fill=tk.X, pady=3)
 
         def open_correct_pause():
-            """Open a dialog to retroactively add a pause to the current session (migration helper)."""
+            """Open a dialog to retroactively add a break to the current session (migration helper)."""
             if not self.tracker.start_time_stamp:
                 messagebox.showinfo(
                     "No Session",
@@ -1192,7 +1192,7 @@ class TrackMe:
                 return
 
             dlg = tk.Toplevel(win)
-            dlg.title("Correct Pause")
+            dlg.title("Correct Break")
             dlg.config(bg=Color.BACKGROUND.value)
             dlg.resizable(False, False)
             dlg.grab_set()
@@ -1204,10 +1204,10 @@ class TrackMe:
             FG2  = Color.TEXT.value
             PAU  = Color.PAUSE.value
 
-            tk.Label(dlg, text="Correct Pause",
+            tk.Label(dlg, text="Correct Break",
                      bg=BG2, fg=PAU, font=("Arial", 13, "bold")
                      ).pack(pady=(18, 2), padx=24, anchor="w")
-            tk.Label(dlg, text="Add a missed pause to the current session.\n"
+            tk.Label(dlg, text="Add a missed break to the current session.\n"
                                "No API call will be made – local data only.",
                      bg=BG2, fg="#aaaaaa", font=("Arial", 9)
                      ).pack(pady=(0, 6), padx=24, anchor="w")
@@ -1309,8 +1309,8 @@ class TrackMe:
                 h = pause_mins_var.get() // 60
                 m = pause_mins_var.get() % 60
                 messagebox.showinfo(
-                    "Pause Added",
-                    f"A pause of {h}h {m:02d}min has been added to today's session.\n"
+                    "Break Added",
+                    f"A break of {h}h {m:02d}min has been added to today's session.\n"
                     "No API call was made."
                 )
 
@@ -1332,7 +1332,7 @@ class TrackMe:
             wy = win.winfo_y() + (win.winfo_height() - dlg.winfo_reqheight()) // 2
             dlg.geometry(f"+{max(0,wx)}+{max(0,wy)}")
 
-        tk.Button(bf, text="☕  Correct Pause",
+        tk.Button(bf, text="☕  Correct Break",
                   bg=Color.PAUSE.value, fg=Color.TEXT.value,
                   font=("Arial", 10, "bold"), bd=0, padx=10, pady=6,
                   command=open_correct_pause).pack(fill=tk.X, pady=3)
@@ -1555,7 +1555,7 @@ class TrackMe:
             hdr = tk.Frame(cards_frame, bg=BG)
             hdr.pack(fill=tk.X, padx=6, pady=(4, 0))
             cols = [("Day", BTN, 14, 8), ("Arrive", POS, 8, 4),
-                    ("Leave", NEG, 9, 4), ("Work", TXT, 9, 4), ("Pause", PAU, 8, 1)]
+                    ("Leave", NEG, 9, 4), ("Work", TXT, 9, 4), ("Break", PAU, 8, 1)]
             for txt, clr, w, px in cols:
                 tk.Label(hdr, text=txt, bg=BG, fg=clr,
                          font=("Arial", 8, "bold"),
@@ -1714,7 +1714,7 @@ class TrackMe:
             pause_ok       = total_pause_done >= required_pause_s
             pause_bar_col  = Color.OVERTIME.value if pause_ok else Color.PAUSE.value
             _draw_bar(self.pause_bar_canvas, pause_progress, pause_bar_col,
-                      f"Pause {min(int(pause_progress*100), 100)}%{'  ✓' if pause_ok else ''}")
+                      f"Break {min(int(pause_progress*100), 100)}%{'  ✓' if pause_ok else ''}")
 
 
             # ── Row 5: Target leave time ──────────────────────────────────────
@@ -1724,7 +1724,7 @@ class TrackMe:
                 text=f"Leave at:  {datetime.fromtimestamp(leave_ts).strftime('%H:%M Uhr')}")
 
             # ── Row 6: Pause info ─────────────────────────────────────────────
-            p_text = (f"Pause: {self.format_seconds(total_pause_done)} / "
+            p_text = (f"Break: {self.format_seconds(total_pause_done)} / "
                       f"{self.format_seconds(required_pause_s)}")
             if pause_left > 0:
                 p_text += f"  ({self.format_seconds(pause_left)} left)"
@@ -1735,7 +1735,7 @@ class TrackMe:
                 self.pause_info.config(fg=Color.OVERTIME.value)
                 if self.tracker.is_in_pause and not self._notified_pause_done:
                     self._notified_pause_done = True
-                    self._fire_notify("☕ Pause complete",
+                    self._fire_notify("☕ Break complete",
                                       "Required break done – you can get back to work!")
             self.pause_info.config(text=p_text)
 
@@ -1747,7 +1747,7 @@ class TrackMe:
                 self._notified_pause_warn = True
                 mins_left = max(1, int(math.ceil(until_6h / 60)))
                 self._fire_notify(
-                    "⏰ Pause needed!",
+                    "⏰ Break needed!",
                     f"You have {mins_left} Minutes left until you worked for 6 hours – "
                     f"You need a break!")
             if work_elapsed < six_hours_s - warn_before_s:
