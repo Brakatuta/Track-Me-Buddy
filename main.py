@@ -678,10 +678,14 @@ class TrackMe:
             return mins * 60
 
         # Hours format:  "Saldo:  -4,57 Std"  or "Saldo: 1.25 Std"
-        m = re.search(r"Saldo:\s*([-+]?\d+[,.]\d+)\s*Std", raw, re.IGNORECASE)
+        # NovaTime uses HH,MM notation (comma = colon), NOT decimal hours.
+        # e.g. "-4,57 Std" means -4h 57min, not -4.57h.
+        m = re.search(r"Saldo:\s*([-+]?)(\d+)[,.](\d+)\s*Std", raw, re.IGNORECASE)
         if m:
-            hours = float(m.group(1).replace(",", "."))
-            return hours * 3600
+            sign    = -1 if m.group(1) == "-" else 1
+            hours   = int(m.group(2))
+            minutes = int(m.group(3))
+            return sign * (hours * 3600 + minutes * 60)
 
         # Fallback: bare number after "Saldo:" — assume hours
         m = re.search(r"Saldo:\s*([-+]?\d+[,.]?\d*)", raw)
@@ -1625,6 +1629,14 @@ class TrackMe:
         s   = abs(int(seconds))
         return f"{'-' if neg else ''}{s//3600:02d}:{(s%3600)//60:02d}:{s%60:02d}"
 
+    def format_seconds_as_hhmm(self, seconds):
+        """Format seconds as ±HH,MM (NovaTime-style) for the bracket hint."""
+        neg = seconds < 0
+        s   = abs(int(seconds))
+        h   = s // 3600
+        m   = (s % 3600) // 60
+        return f"{'-' if neg else '+'}{h},{m:02d}"
+
     # ── Main update loop ──────────────────────────────────────────────────────
     def __update(self):
         # ── Row 1: Date + time ────────────────────────────────────────────────
@@ -1660,13 +1672,13 @@ class TrackMe:
                 bal = snap_saldo + (time.time() - snap_time)
                 bal_color = Color.OVERTIME.value if bal >= 0 else Color.NEGATIVE.value
                 self.balance_account_label.config(
-                    text=f"Balance:  {self.format_seconds(bal)} ({(bal / 3600):+.2f} h)".replace(".", ","),
+                    text=f"Balance:  {self.format_seconds(bal)} ({self.format_seconds_as_hhmm(bal)}h)",
                     fg=bal_color)
             else:
                 bal = self.tracker.total_balance_seconds
                 bal_color = Color.OVERTIME.value if bal >= 0 else Color.NEGATIVE.value
                 self.balance_account_label.config(
-                    text=f"Balance:  {self.format_seconds(bal)} ({(bal / 3600):+.2f} h)".replace(".", ","),
+                    text=f"Balance:  {self.format_seconds(bal)} ({self.format_seconds_as_hhmm(bal)}h)",
                     fg=bal_color)
 
             def _draw_bar(canvas, progress, color, label=""):
