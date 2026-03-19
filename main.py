@@ -1705,7 +1705,7 @@ class TrackMe:
             overtime = work_elapsed > effective_goal_s
             work_bar_color = Color.OVERTIME.value if overtime else Color.ACCENT.value
             _draw_bar(self.work_bar_canvas, work_progress, work_bar_color,
-                      f"Work: {min(int(work_progress*100), 100)}%  ✓")
+                      f"Work: {min(int(work_progress*100), 100)}%{'  ✓' if work_left_secs <= 0 else ''}")
 
             # Row 4: Work Left / Goal Reached + pause progress bar
             if work_left_secs > 0:
