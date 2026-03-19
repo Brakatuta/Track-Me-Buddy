@@ -1682,15 +1682,15 @@ class TrackMe:
                         text=f"Balance:  {self.format_seconds(bal)} ({self.format_seconds_as_hhmm(bal)}h)",
                         fg=bal_color)
 
-                def _draw_bar(canvas, progress, color, label=""):
-                    canvas.delete("all")
-                    bw, bh = self._bar_w, self._bar_h
-                    canvas.create_rectangle(0, 0, bw, bh, fill="#2a2a3e", outline="")
-                    fill_w = int(bw * min(1.0, progress))
-                    if fill_w > 0:
-                        canvas.create_rectangle(0, 0, fill_w, bh, fill=color, outline="")
-                    canvas.create_text(bw // 2, bh // 2, text=label,
-                                    fill="white", font=("Arial", 8, "bold"))
+            def _draw_bar(canvas, progress, color, label=""):
+                canvas.delete("all")
+                bw, bh = self._bar_w, self._bar_h
+                canvas.create_rectangle(0, 0, bw, bh, fill="#2a2a3e", outline="")
+                fill_w = int(bw * min(1.0, progress))
+                if fill_w > 0:
+                    canvas.create_rectangle(0, 0, fill_w, bh, fill=color, outline="")
+                canvas.create_text(bw // 2, bh // 2, text=label,
+                                fill="white", font=("Arial", 8, "bold"))
 
             # Row 3: Worked label + work progress bar
             g_h = int(self.tracker.daily_goal)
