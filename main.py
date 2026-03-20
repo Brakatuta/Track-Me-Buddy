@@ -24,20 +24,161 @@ NOVA_AVAILABLE = True
 TRAY_AVAILABLE = True
 NOTIFY_AVAILABLE = True
 
+# ── Themes (palette definitions) ─────────────────────────────────────────────
+THEMES = {
+    "Dark Mode": {
+        "BACKGROUND":       "#1f1d1d",
+        "FOREGROUND":       "#333131",
+        "BUTTON":           "#555252",
+        "TEXT":             "#ffffff",
+        "PAUSE":            "#ff9800",
+        "OVERTIME":         "#4caf50",
+        "NEGATIVE":         "#f44336",
+        "STOP":             "#9c1515",
+        "ACCENT":           "#5b9bd5",
+        "API":              "#2e86ab",
+        "TEST":             "#9c1515",
+        "BAR_EMPTY":        "#2a2a3e",
+        "BAR_TEXT":         "#ffffff",
+        "BTN_OVERTIME_BG":  "#5b9bd5",
+        "BTN_OVERTIME_FG":  "#ffffff",
+        "BTN_BORED_BG":     "#e6b800",
+        "BTN_BORED_FG":     "#1a1a1a",
+        "BTN_THEME_BG":     "#555252",
+        "BTN_THEME_FG":     "#ffffff",
+        "BTN_API_BG":       "#2e86ab",
+        "BTN_API_FG":       "#ffffff",
+        "BTN_SETTINGS_BG":  "#555252",
+        "BTN_SETTINGS_FG":  "#ffffff",
+        "BTN_CLOCKIN_BG":   "#555252",
+        "BTN_CLOCKIN_FG":   "#ffffff",
+        "BTN_CLOCKOUT_BG":  "#9c1515",
+        "BTN_CLOCKOUT_FG":  "#ffffff",
+        "BTN_PAUSE_BG":     "#ff9800",
+        "BTN_PAUSE_FG":     "#ffffff",
+        "BTN_ENDPAUSE_BG":  "#f44336",
+        "BTN_ENDPAUSE_FG":  "#ffffff",
+        "BTN_TRIP_BG":      "#0b7236",
+        "BTN_TRIP_FG":      "#ffffff",
+        "BTN_ENDTRIP_BG":   "#f44336",
+        "BTN_ENDTRIP_FG":   "#ffffff",
+    },
+    "Dracula": {
+        "BACKGROUND":       "#282a36",
+        "FOREGROUND":       "#383a4a",
+        "BUTTON":           "#44475a",
+        "TEXT":             "#f8f8f2",
+        "PAUSE":            "#ffb86c",
+        "OVERTIME":         "#50fa7b",
+        "NEGATIVE":         "#ff5555",
+        "STOP":             "#ff5555",
+        "ACCENT":           "#bd93f9",
+        "API":              "#8be9fd",
+        "TEST":             "#ff5555",
+        "BAR_EMPTY":        "#21222c",
+        "BAR_TEXT":         "#f8f8f2",
+        "BTN_OVERTIME_BG":  "#bd93f9",
+        "BTN_OVERTIME_FG":  "#282a36",
+        "BTN_BORED_BG":     "#f1fa8c",
+        "BTN_BORED_FG":     "#282a36",
+        "BTN_THEME_BG":     "#44475a",
+        "BTN_THEME_FG":     "#f8f8f2",
+        "BTN_API_BG":       "#8be9fd",
+        "BTN_API_FG":       "#282a36",
+        "BTN_SETTINGS_BG":  "#44475a",
+        "BTN_SETTINGS_FG":  "#f8f8f2",
+        "BTN_CLOCKIN_BG":   "#44475a",
+        "BTN_CLOCKIN_FG":   "#f8f8f2",
+        "BTN_CLOCKOUT_BG":  "#ff5555",
+        "BTN_CLOCKOUT_FG":  "#f8f8f2",
+        "BTN_PAUSE_BG":     "#ffb86c",
+        "BTN_PAUSE_FG":     "#f8f8f2",
+        "BTN_ENDPAUSE_BG":  "#ff5555",
+        "BTN_ENDPAUSE_FG":  "#282a36",
+        "BTN_TRIP_BG":      "#50fa7b",
+        "BTN_TRIP_FG":      "#282a36",
+        "BTN_ENDTRIP_BG":   "#ff5555",
+        "BTN_ENDTRIP_FG":   "#f8f8f2",
+    },
+    "Blue Theme": {
+        "BACKGROUND":       "#0d1b2a",
+        "FOREGROUND":       "#1b2d45",
+        "BUTTON":           "#1e3a5f",
+        "TEXT":             "#e0f0ff",
+        "PAUSE":            "#f4a261",
+        "OVERTIME":         "#52b788",
+        "NEGATIVE":         "#e63946",
+        "STOP":             "#c1121f",
+        "ACCENT":           "#48cae4",
+        "API":              "#0096c7",
+        "TEST":             "#c1121f",
+        "BAR_EMPTY":        "#0a1628",
+        "BAR_TEXT":         "#e0f0ff",
+        "BTN_OVERTIME_BG":  "#48cae4",
+        "BTN_OVERTIME_FG":  "#0d1b2a",
+        "BTN_BORED_BG":     "#f4a261",
+        "BTN_BORED_FG":     "#0d1b2a",
+        "BTN_THEME_BG":     "#1e3a5f",
+        "BTN_THEME_FG":     "#e0f0ff",
+        "BTN_API_BG":       "#0096c7",
+        "BTN_API_FG":       "#e0f0ff",
+        "BTN_SETTINGS_BG":  "#1e3a5f",
+        "BTN_SETTINGS_FG":  "#e0f0ff",
+        "BTN_CLOCKIN_BG":   "#1e3a5f",
+        "BTN_CLOCKIN_FG":   "#e0f0ff",
+        "BTN_CLOCKOUT_BG":  "#c1121f",
+        "BTN_CLOCKOUT_FG":  "#e0f0ff",
+        "BTN_PAUSE_BG":     "#f4a261",
+        "BTN_PAUSE_FG":     "#e0f0ff",
+        "BTN_ENDPAUSE_BG":  "#e63946",
+        "BTN_ENDPAUSE_FG":  "#0d1b2a",
+        "BTN_TRIP_BG":      "#2dc653",
+        "BTN_TRIP_FG":      "#0d1b2a",
+        "BTN_ENDTRIP_BG":   "#e63946",
+        "BTN_ENDTRIP_FG":   "#e0f0ff",
+    },
+}
+
 # ── Colours ───────────────────────────────────────────────────────────────────
 class Color(Enum):
-    TEST       = "#9c1515"
-    BACKGROUND = "#1f1d1d"
-    FOREGROUND = "#333131"
-    BUTTON     = "#555252"
-    TEXT       = "#ffffff"
-    PAUSE      = "#ff9800"
-    OVERTIME   = "#4caf50"
-    NEGATIVE   = "#f44336"
-    STOP       = "#9c1515"
-    ACCENT     = "#5b9bd5"
-    DIENSTGANG = "#0b7236"
-    API        = "#2e86ab"
+    TEST            = "#9c1515"
+    BACKGROUND      = "#1f1d1d"
+    FOREGROUND      = "#333131"
+    BUTTON          = "#555252"
+    TEXT            = "#ffffff"
+    PAUSE           = "#ff9800"
+    OVERTIME        = "#4caf50"
+    NEGATIVE        = "#f44336"
+    STOP            = "#9c1515"
+    ACCENT          = "#5b9bd5"
+    API             = "#2e86ab"
+    # Progress bars
+    BAR_EMPTY       = "#2a2a3e"
+    BAR_TEXT        = "#ffffff"
+    # Header buttons
+    BTN_OVERTIME_BG = "#5b9bd5"
+    BTN_OVERTIME_FG = "#200202"
+    BTN_BORED_BG    = "#e6b800"
+    BTN_BORED_FG    = "#1a1a1a"
+    BTN_THEME_BG    = "#555252"
+    BTN_THEME_FG    = "#ffffff"
+    BTN_API_BG      = "#2e86ab"
+    BTN_API_FG      = "#200202"
+    BTN_SETTINGS_BG = "#555252"
+    BTN_SETTINGS_FG = "#ffffff"
+    # Main action buttons
+    BTN_CLOCKIN_BG  = "#535552"
+    BTN_CLOCKIN_FG  = "#ffffff"
+    BTN_CLOCKOUT_BG = "#9c1515"
+    BTN_CLOCKOUT_FG = "#ffffff"
+    BTN_PAUSE_BG    = "#ff9800"
+    BTN_PAUSE_FG    = "#ffffff"
+    BTN_ENDPAUSE_BG = "#f44336"
+    BTN_ENDPAUSE_FG = "#ffffff"
+    BTN_TRIP_BG     = "#0b7236"
+    BTN_TRIP_FG     = "#ffffff"
+    BTN_ENDTRIP_BG  = "#f44336"
+    BTN_ENDTRIP_FG  = "#ffffff"
 
 # ── Base directory & save folder ─────────────────────────────────────────────
 # Works correctly both as a plain .py script and when bundled with
@@ -53,6 +194,32 @@ def _get_save_dir() -> Path:
     save_dir = _get_base_dir() / "save"
     save_dir.mkdir(exist_ok=True)
     return save_dir
+
+# ── Theme helpers (need Color and _get_save_dir defined above) ────────────────
+def _load_active_theme_name() -> str:
+    try:
+        path = _get_save_dir() / "theme.json"
+        if path.exists():
+            with open(path) as f:
+                return json.load(f).get("theme", "Dark Mode")
+    except Exception:
+        pass
+    return "Dark Mode"
+
+def _save_active_theme_name(name: str):
+    try:
+        path = _get_save_dir() / "theme.json"
+        with open(path, "w") as f:
+            json.dump({"theme": name}, f)
+    except Exception as e:
+        print(f"[Theme] Save error: {e}")
+
+def _apply_theme(name: str):
+    """Patch Color enum values in-place from the named theme palette."""
+    palette = THEMES.get(name, THEMES["Dark Mode"])
+    for member in Color:
+        if member.name in palette:
+            member._value_ = palette[member.name]
 
 # ── NovaTime API config (separate file) ───────────────────────────────────────
 class NovaConfig:
@@ -111,11 +278,12 @@ class Tracker:
     def __init__(self):
         self.file_path = str(_get_save_dir() / "data.json")
         self.reset_values()
-        self.daily_goal              = 8.0
-        self.default_pause_mins      = 30.0
-        self.total_balance_seconds   = 0.0
-        self.daily_credit_mins       = 0.0
-        self.pause_warn_before_mins  = 15.0
+        self.daily_goal                  = 8.0
+        self.default_pause_mins          = 30.0
+        self.total_balance_seconds       = 0.0
+        self.daily_credit_mins           = 0.0
+        self.pause_warn_before_mins      = 15.0
+        self.break_required_after_hours  = 6.0
         self.load_data()
 
     def reset_values(self):
@@ -179,6 +347,7 @@ class Tracker:
             "daily_credit_mins":      self.daily_credit_mins,
             "pause_warn_before_mins": self.pause_warn_before_mins,
             "is_on_dienstgang":       self.is_on_dienstgang,
+            "break_required_after_hours": self.break_required_after_hours,
         }
         with open(self.file_path, "w") as f:
             json.dump(data, f, indent=4)
@@ -200,6 +369,7 @@ class Tracker:
                 self.daily_credit_mins      = d.get("daily_credit_mins", 0.0)
                 self.pause_warn_before_mins = d.get("pause_warn_before_mins", 15.0)
                 self.is_on_dienstgang       = d.get("is_on_dienstgang", False)
+                self.break_required_after_hours = d.get("break_required_after_hours", 6.0)
             except Exception as e:
                 print(f"Load error: {e}")
 
@@ -367,21 +537,35 @@ class TrackMe:
         header.pack(fill=tk.X, padx=10, pady=5)
 
         # Right side of header: Settings | API (right-to-left order)
-        tk.Button(header, text="⚙ Settings", bg=Color.BUTTON.value, fg=Color.TEXT.value,
-                  command=self.open_settings, font=("Arial", 10), bd=0, padx=10
-                  ).pack(side="right")
+        self.hdr_settings_btn = tk.Button(header, text="⚙ Settings",
+                  bg=Color.BTN_SETTINGS_BG.value, fg=Color.BTN_SETTINGS_FG.value,
+                  activebackground=Color.BTN_SETTINGS_BG.value, activeforeground=Color.BTN_SETTINGS_FG.value,
+                  command=self.open_settings, font=("Arial", 10), bd=0, padx=10, relief="flat")
+        self.hdr_settings_btn.pack(side="right")
 
-        tk.Button(header, text="🔌 API", bg=Color.API.value, fg=Color.TEXT.value,
-                  command=self.open_api_settings, font=("Arial", 10), bd=0, padx=10
-                  ).pack(side="right", padx=(0, 4))
+        self.hdr_api_btn = tk.Button(header, text="🔌 API",
+                  bg=Color.BTN_API_BG.value, fg=Color.BTN_API_FG.value,
+                  activebackground=Color.BTN_API_BG.value, activeforeground=Color.BTN_API_FG.value,
+                  command=self.open_api_settings, font=("Arial", 10), bd=0, padx=10, relief="flat")
+        self.hdr_api_btn.pack(side="right", padx=(0, 4))
 
-        tk.Button(header, text="◑ AutoOvertime", bg=Color.ACCENT.value, fg=Color.TEXT.value,
-                  command=self.open_auto_overtime, font=("Arial", 10), bd=0, padx=10
-                  ).pack(side="right", padx=(0, 4))
+        self.hdr_overtime_btn = tk.Button(header, text="◑ AutoOvertime",
+                  bg=Color.BTN_OVERTIME_BG.value, fg=Color.BTN_OVERTIME_FG.value,
+                  activebackground=Color.BTN_OVERTIME_BG.value, activeforeground=Color.BTN_OVERTIME_FG.value,
+                  command=self.open_auto_overtime, font=("Arial", 10), bd=0, padx=10, relief="flat")
+        self.hdr_overtime_btn.pack(side="right", padx=(0, 4))
 
-        tk.Button(header, text="🎮 Bored?", bg="#e6b800", fg="#1a1a1a",
-                  command=self._launch_game, font=("Arial", 10, "bold"), bd=0, padx=10
-                  ).pack(side="right", padx=(0, 4))
+        self.hdr_bored_btn = tk.Button(header, text="🎮 Bored?",
+                  bg=Color.BTN_BORED_BG.value, fg=Color.BTN_BORED_FG.value,
+                  activebackground=Color.BTN_BORED_BG.value, activeforeground=Color.BTN_BORED_FG.value,
+                  command=self._launch_game, font=("Arial", 10, "bold"), bd=0, padx=10, relief="flat")
+        self.hdr_bored_btn.pack(side="right", padx=(0, 4))
+
+        self.hdr_theme_btn = tk.Button(header, text="🎨 Theme",
+                  bg=Color.BTN_THEME_BG.value, fg=Color.BTN_THEME_FG.value,
+                  activebackground=Color.BTN_THEME_BG.value, activeforeground=Color.BTN_THEME_FG.value,
+                  command=self.open_theme_picker, font=("Arial", 10), bd=0, padx=10, relief="flat")
+        self.hdr_theme_btn.pack(side="right", padx=(0, 4))
 
         # ── Info area ─────────────────────────────────────────────────────────
         self.info_frame = tk.Frame(self.main_frame, bg=Color.BACKGROUND.value, height=300)
@@ -443,23 +627,26 @@ class TrackMe:
         BTN_W = 18
 
         self.start_button = tk.Button(self.btn_frame, text="Clock In",
-                                      bg=Color.BUTTON.value, fg=Color.TEXT.value,
-                                      command=self.handle_start_stop,
+                                      bg=Color.BTN_CLOCKIN_BG.value, fg=Color.BTN_CLOCKIN_FG.value,
+                                      activebackground=Color.BTN_CLOCKIN_BG.value, activeforeground=Color.BTN_CLOCKIN_FG.value,
+                                      command=self.handle_start_stop, relief="flat",
                                       font=("Arial", 11, "bold"), width=BTN_W, pady=10)
         self.start_button.pack(side="left", padx=6)
 
         self.dienstgang_button = tk.Button(
             self.btn_frame,
             text="🚗 Business Trip Start",
-            bg=Color.DIENSTGANG.value, fg=Color.TEXT.value,
-            command=self.handle_dienstgang_click,
+            bg=Color.BTN_TRIP_BG.value, fg=Color.BTN_TRIP_FG.value,
+            activebackground=Color.BTN_TRIP_BG.value, activeforeground=Color.BTN_TRIP_FG.value,
+            command=self.handle_dienstgang_click, relief="flat",
             font=("Arial", 11, "bold"), width=BTN_W, pady=10,
         )
         self.dienstgang_button.pack(side="left", padx=6)
 
         self.pause_button = tk.Button(self.btn_frame, text="Break",
-                                      bg=Color.BUTTON.value, fg=Color.TEXT.value,
-                                      command=self.handle_pause_click,
+                                      bg=Color.BTN_PAUSE_BG.value, fg=Color.BTN_PAUSE_FG.value,
+                                      activebackground=Color.BTN_PAUSE_BG.value, activeforeground=Color.BTN_PAUSE_FG.value,
+                                      command=self.handle_pause_click, relief="flat",
                                       font=("Arial", 11, "bold"), width=BTN_W, pady=10)
         self.pause_button.pack(side="left", padx=6)
 
@@ -490,12 +677,10 @@ class TrackMe:
                 if not messagebox.askyesno(
                     "⚠ Work not finished",
                     f"You still have {missing} of work remaining!\n\n"
-                    f"Stopping now will subtract this time from your balance.\n\n"
                     f"Stop anyway?"
                 ):
                     return
 
-            self.tracker.total_balance_seconds += diff
             self.tracker.reset_values()
             self.tracker.save_data()
             self._nova_work_async("end_work")
@@ -553,34 +738,60 @@ class TrackMe:
 
     def update_start_button(self):
         if self.tracker.start_time_stamp > 0:
-            self.start_button.config(text="Clock Out", bg=Color.STOP.value)
+            self.start_button.config(text="Clock Out",
+                                     bg=Color.BTN_CLOCKOUT_BG.value,
+                                     fg=Color.BTN_CLOCKOUT_FG.value,
+                                     activebackground=Color.BTN_CLOCKOUT_BG.value,
+                                     activeforeground=Color.BTN_CLOCKOUT_FG.value)
         else:
-            self.start_button.config(text="Clock In", bg=Color.BUTTON.value)
+            self.start_button.config(text="Clock In",
+                                     bg=Color.BTN_CLOCKIN_BG.value,
+                                     fg=Color.BTN_CLOCKIN_FG.value,
+                                     activebackground=Color.BTN_CLOCKIN_BG.value,
+                                     activeforeground=Color.BTN_CLOCKIN_FG.value)
 
     def update_pause_button_text(self):
         if self.tracker.is_in_pause:
-            self.pause_button.config(text="End Break", bg=Color.PAUSE.value,
-                                     state="normal", fg=Color.TEXT.value)
+            self.pause_button.config(text="End Break",
+                                     bg=Color.BTN_ENDPAUSE_BG.value,
+                                     fg=Color.BTN_ENDPAUSE_FG.value,
+                                     activebackground=Color.BTN_ENDPAUSE_BG.value,
+                                     activeforeground=Color.BTN_ENDPAUSE_FG.value,
+                                     state="normal")
             self.dienstgang_button.config(state="disabled", fg="#888888")
         else:
-            self.pause_button.config(text="Break", bg=Color.BUTTON.value,
-                                     fg=Color.TEXT.value)
+            self.pause_button.config(text="Break",
+                                     bg=Color.BTN_PAUSE_BG.value,
+                                     fg=Color.BTN_PAUSE_FG.value,
+                                     activebackground=Color.BTN_PAUSE_BG.value,
+                                     activeforeground=Color.BTN_PAUSE_FG.value)
             if not self.tracker.is_on_dienstgang:
-                self.dienstgang_button.config(state="normal", fg=Color.TEXT.value)
+                self.dienstgang_button.config(state="normal",
+                                              fg=Color.BTN_TRIP_FG.value,
+                                              activeforeground=Color.BTN_TRIP_FG.value)
 
     def update_dienstgang_button_text(self):
         if self.tracker.is_on_dienstgang:
             self.dienstgang_button.config(
                 text="🏠 Business Trip End",
-                bg=Color.NEGATIVE.value,
+                bg=Color.BTN_ENDTRIP_BG.value,
+                fg=Color.BTN_ENDTRIP_FG.value,
+                activebackground=Color.BTN_ENDTRIP_BG.value,
+                activeforeground=Color.BTN_ENDTRIP_FG.value,
             )
-            self.pause_button.config(state="disabled", bg=Color.BUTTON.value, fg="#888888")
+            self.pause_button.config(state="disabled",
+                                     bg=Color.BTN_PAUSE_BG.value, fg="#888888")
         else:
             self.dienstgang_button.config(
                 text="🚗 Business Trip Start",
-                bg=Color.DIENSTGANG.value,
+                bg=Color.BTN_TRIP_BG.value,
+                fg=Color.BTN_TRIP_FG.value,
+                activebackground=Color.BTN_TRIP_BG.value,
+                activeforeground=Color.BTN_TRIP_FG.value,
             )
-            self.pause_button.config(state="normal", fg=Color.TEXT.value)
+            self.pause_button.config(state="normal",
+                                     fg=Color.BTN_PAUSE_FG.value,
+                                     activeforeground=Color.BTN_PAUSE_FG.value)
 
     # ── Popup helpers ─────────────────────────────────────────────────────────
     def _make_popup(self, title):
@@ -604,7 +815,7 @@ class TrackMe:
             my = self.master.winfo_y()
             mw = self.master.winfo_width()
             mh = self.master.winfo_height()
-            x  = mx - sw - 8
+            x  = mx - sw - 80
             if x < 0:
                 x = mx + mw + 8
             y  = my + (mh - sh) // 2
@@ -736,6 +947,132 @@ class TrackMe:
 
         threading.Thread(target=_run, daemon=True).start()
 
+    # ── Theme Picker ──────────────────────────────────────────────────────────
+    def open_theme_picker(self):
+        win = self._make_popup("Theme")
+        self._position_left(win)
+
+        BG  = Color.BACKGROUND.value
+        FG  = Color.TEXT.value
+        BTN = Color.BUTTON.value
+        ACC = Color.ACCENT.value
+
+        tk.Label(win, text="🎨  Choose Theme",
+                 bg=BG, fg=ACC, font=("Arial", 13, "bold")
+                 ).pack(pady=(18, 4), padx=24, anchor="w")
+        tk.Frame(win, bg=BTN, height=1).pack(fill=tk.X, padx=24, pady=(0, 12))
+
+        current_theme = _load_active_theme_name()
+
+        PREVIEW = {
+            "Dark Mode":  ("⬛", "#1f1d1d", "#ffffff"),
+            "Dracula":    ("🟣", "#282a36", "#f8f8f2"),
+            "Blue Theme": ("🔵", "#0d1b2a", "#e0f0ff"),
+        }
+
+        selected_var = tk.StringVar(value=current_theme)
+
+        btn_refs = {}
+        for name in THEMES:
+            icon, bg_col, fg_col = PREVIEW[name]
+            is_active = (name == current_theme)
+
+            row = tk.Frame(win, bg=BG)
+            row.pack(fill=tk.X, padx=20, pady=3)
+
+            # Colour swatch
+            swatch = tk.Frame(row, bg=bg_col, width=24, height=24,
+                              highlightbackground=fg_col, highlightthickness=1)
+            swatch.pack(side="left", padx=(0, 8))
+            swatch.pack_propagate(False)
+            tk.Label(swatch, text=" ", bg=bg_col).pack()
+
+            btn = tk.Button(
+                row, text=f"{icon}  {name}",
+                bg=ACC if is_active else BTN,
+                fg=FG,
+                font=("Arial", 10, "bold" if is_active else "normal"),
+                bd=0, padx=14, pady=6, anchor="w", width=16,
+                relief="flat",
+            )
+            btn.pack(side="left")
+            btn_refs[name] = btn
+
+            def _pick(n=name):
+                # Update button styles
+                for bname, b in btn_refs.items():
+                    b.config(
+                        bg=ACC if bname == n else BTN,
+                        font=("Arial", 10, "bold" if bname == n else "normal"),
+                    )
+                selected_var.set(n)
+                # Apply theme and redraw main window
+                _apply_theme(n)
+                _save_active_theme_name(n)
+                self._redraw_all_colors()
+
+            btn.config(command=_pick)
+
+        tk.Frame(win, bg=BTN, height=1).pack(fill=tk.X, padx=24, pady=(14, 8))
+        tk.Label(win, text="Changes apply instantly.", bg=BG, fg=BTN,
+                 font=("Arial", 8)).pack(pady=(0, 14))
+
+        win.protocol("WM_DELETE_WINDOW", win.destroy)
+
+    def _redraw_all_colors(self):
+        """Re-apply all current Color values to the main window widgets."""
+        BG  = Color.BACKGROUND.value
+        FG  = Color.FOREGROUND.value
+        BTN = Color.BUTTON.value
+        TXT = Color.TEXT.value
+        ACC = Color.ACCENT.value
+
+        # ── Root + frames ─────────────────────────────────────────────────────
+        self.master.config(bg=BG)
+        self.main_frame.config(bg=FG)
+        self.info_frame.config(bg=BG)
+        self.btn_frame.config(bg=FG)
+
+        # ── Header buttons ────────────────────────────────────────────────────
+        self.hdr_settings_btn.config(bg=Color.BTN_SETTINGS_BG.value, fg=Color.BTN_SETTINGS_FG.value,
+                                      activebackground=Color.BTN_SETTINGS_BG.value, activeforeground=Color.BTN_SETTINGS_FG.value)
+        self.hdr_api_btn.config(    bg=Color.BTN_API_BG.value,       fg=Color.BTN_API_FG.value,
+                                      activebackground=Color.BTN_API_BG.value, activeforeground=Color.BTN_API_FG.value)
+        self.hdr_overtime_btn.config(bg=Color.BTN_OVERTIME_BG.value, fg=Color.BTN_OVERTIME_FG.value,
+                                      activebackground=Color.BTN_OVERTIME_BG.value, activeforeground=Color.BTN_OVERTIME_FG.value)
+        self.hdr_bored_btn.config(  bg=Color.BTN_BORED_BG.value,     fg=Color.BTN_BORED_FG.value,
+                                      activebackground=Color.BTN_BORED_BG.value, activeforeground=Color.BTN_BORED_FG.value)
+        self.hdr_theme_btn.config(  bg=Color.BTN_THEME_BG.value,     fg=Color.BTN_THEME_FG.value,
+                                      activebackground=Color.BTN_THEME_BG.value, activeforeground=Color.BTN_THEME_FG.value)
+
+        # Parent frame of header buttons
+        for child in self.main_frame.winfo_children():
+            if child.winfo_class() == "Frame" and child not in (self.info_frame, self.btn_frame):
+                child.config(bg=FG)
+                break
+
+        # ── Info labels & canvases ────────────────────────────────────────────
+        self.time_display.config(bg=BG, fg=TXT)
+        self.balance_account_label.config(bg=BG)
+        self.worked_label.config(bg=BG, fg=TXT)
+        self.work_hours_left.config(bg=BG, fg=TXT)
+        self.pause_info.config(bg=BG)
+        self.you_can_go_in.config(bg=BG, fg=ACC)
+        self.work_bar_canvas.config(bg=BG)
+        self.pause_bar_canvas.config(bg=BG)
+
+        # Separator lines inside info_frame
+        for child in self.info_frame.winfo_children():
+            try:
+                if child.winfo_class() == "Frame":
+                    child.config(bg=BTN)
+            except Exception:
+                pass
+
+        # ── Action buttons (state-aware) ──────────────────────────────────────
+        self.update_start_button()
+        self.update_pause_button_text()
+        self.update_dienstgang_button_text()
     # ── API Settings window ───────────────────────────────────────────────────
     def open_api_settings(self):
         win = self._make_popup("Nova Time API Settings")
@@ -851,217 +1188,230 @@ class TrackMe:
     def open_settings(self):
         win = self._make_popup("Settings")
         self._position_left(win)
+        win.geometry("620x460")
+
+        BG  = Color.BACKGROUND.value
+        FG  = Color.FOREGROUND.value
+        TXT = Color.TEXT.value
+        BTN = Color.BUTTON.value
+        ACC = Color.ACCENT.value
+
+        # ── Helper: card frame ────────────────────────────────────────────────
+        def make_card(parent, title, title_color):
+            # parent is already grid-placed; configure it as the card
+            parent.config(bg=FG)
+            tk.Label(parent, text=title, bg=FG, fg=title_color,
+                     font=("Arial", 10, "bold")).pack(anchor="w", padx=10, pady=(8, 2))
+            tk.Frame(parent, bg=BTN, height=1).pack(fill=tk.X, padx=8, pady=(0, 4))
+            inner = tk.Frame(parent, bg=BG)
+            inner.pack(fill=tk.BOTH, expand=True, padx=6, pady=(0, 6))
+            return inner
+
+        # ── Helper: compact slider row (fits inside a card) ───────────────────
+        # tk.Scale adds ~25px left padding internally; _LX aligns labels to track.
+        _LX = 26
 
         def slider_row(parent, label, var, from_, to, resolution, fmt_fn, color):
-            tk.Label(parent, text=label, bg=Color.BACKGROUND.value,
-                     fg=Color.TEXT.value, font=("Arial", 10)).pack(pady=(12, 0))
-            disp = tk.Label(parent, text="", bg=Color.BACKGROUND.value,
-                            fg=color, font=("Arial", 13, "bold"))
-            disp.pack()
+            tk.Label(parent, text=label, bg=BG, fg=TXT,
+                     font=("Arial", 9)).pack(anchor="w", padx=(_LX, 4), pady=(6, 0))
+            disp = tk.Label(parent, text="", bg=BG, fg=color,
+                            font=("Arial", 12, "bold"))
+            disp.pack(anchor="w", padx=(_LX, 4))
             def upd(*_): disp.config(text=fmt_fn(var.get()))
             var.trace_add("write", upd)
             tk.Scale(parent, variable=var, from_=from_, to=to, resolution=resolution,
-                     orient=tk.HORIZONTAL, bg=Color.BACKGROUND.value, fg=Color.TEXT.value,
-                     highlightthickness=0, showvalue=False, length=220
-                     ).pack(padx=30, pady=(0, 2))
+                     orient=tk.HORIZONTAL, bg=BG, fg=TXT,
+                     highlightthickness=0, showvalue=False, length=230
+                     ).pack(padx=4, pady=(0, 2))
             upd()
             return upd
 
         def hhmm_slider_row(parent, label, var_hours, from_h, to_h, color):
-            """Slider row for HH:MM values with separate hour+minute spinboxes."""
-            BG  = Color.BACKGROUND.value
-            FG  = Color.TEXT.value
-
-            tk.Label(parent, text=label, bg=BG, fg=FG,
-                     font=("Arial", 10)).pack(pady=(12, 0))
-
+            """Compact HH:MM slider row for inside a card."""
+            tk.Label(parent, text=label, bg=BG, fg=TXT,
+                     font=("Arial", 9)).pack(anchor="w", padx=(_LX, 4), pady=(6, 0))
             row_frame = tk.Frame(parent, bg=BG)
-            row_frame.pack()
-
+            row_frame.pack(anchor="w", padx=(_LX, 4))
             disp = tk.Label(row_frame, text="", bg=BG, fg=color,
-                            font=("Arial", 13, "bold"), width=9)
-            disp.pack(side="left", padx=(0, 10))
-
-            # Spinbox hour
-            tk.Label(row_frame, text="h", bg=BG, fg=FG,
+                            font=("Arial", 12, "bold"))
+            disp.pack(side="left", padx=(0, 8))
+            tk.Label(row_frame, text="h", bg=BG, fg=TXT,
                      font=("Arial", 9)).pack(side="left")
             sb_h = tk.Spinbox(row_frame, from_=int(from_h), to=int(to_h),
-                              width=3, font=("Arial", 11),
-                              bg=Color.FOREGROUND.value, fg=FG,
-                              buttonbackground=Color.BUTTON.value,
-                              insertbackground=FG, relief="flat")
-            sb_h.pack(side="left", padx=(2, 6))
-
-            # Spinbox minute
-            tk.Label(row_frame, text="min", bg=BG, fg=FG,
+                              width=3, font=("Arial", 10),
+                              bg=FG, fg=TXT, buttonbackground=BTN,
+                              insertbackground=TXT, relief="flat")
+            sb_h.pack(side="left", padx=(2, 5))
+            tk.Label(row_frame, text="min", bg=BG, fg=TXT,
                      font=("Arial", 9)).pack(side="left")
             sb_m = tk.Spinbox(row_frame, from_=0, to=59, width=3,
-                              font=("Arial", 11),
-                              bg=Color.FOREGROUND.value, fg=FG,
-                              buttonbackground=Color.BUTTON.value,
-                              insertbackground=FG, relief="flat")
+                              font=("Arial", 10),
+                              bg=FG, fg=TXT, buttonbackground=BTN,
+                              insertbackground=TXT, relief="flat")
             sb_m.pack(side="left", padx=(2, 0))
-
-            _updating = [False]
-
-            def _refresh_disp(*_):
-                v = var_hours.get()
-                h = int(v)
-                m = round((v - h) * 60)
+            _upd = [False]
+            def _refresh(*_):
+                v = var_hours.get(); h = int(v); m = round((v - h) * 60)
                 disp.config(text=f"{h:02d}:{m:02d} h")
-
-            def _slider_to_spin(*_):
-                if _updating[0]: return
-                _updating[0] = True
-                v = var_hours.get()
-                h = int(v)
-                m = round((v - h) * 60)
+            def _s2sp(*_):
+                if _upd[0]: return
+                _upd[0] = True
+                v = var_hours.get(); h = int(v); m = round((v - h) * 60)
                 sb_h.delete(0, "end"); sb_h.insert(0, str(h))
                 sb_m.delete(0, "end"); sb_m.insert(0, str(m))
-                _refresh_disp()
-                _updating[0] = False
-
-            def _spin_to_slider(*_):
-                if _updating[0]: return
-                _updating[0] = True
+                _refresh(); _upd[0] = False
+            def _sp2s(*_):
+                if _upd[0]: return
+                _upd[0] = True
                 try:
                     h = max(int(from_h), min(int(to_h), int(sb_h.get())))
                     m = max(0, min(59, int(sb_m.get())))
                 except ValueError:
-                    _updating[0] = False
-                    return
-                var_hours.set(round(h + m / 60, 10))
-                _refresh_disp()
-                _updating[0] = False
-
-            var_hours.trace_add("write", _slider_to_spin)
-            sb_h.config(command=_spin_to_slider)
-            sb_m.config(command=_spin_to_slider)
-            sb_h.bind("<FocusOut>", _spin_to_slider)
-            sb_h.bind("<Return>",   _spin_to_slider)
-            sb_m.bind("<FocusOut>", _spin_to_slider)
-            sb_m.bind("<Return>",   _spin_to_slider)
-
+                    _upd[0] = False; return
+                var_hours.set(round(h + m / 60, 10)); _refresh(); _upd[0] = False
+            var_hours.trace_add("write", _s2sp)
+            sb_h.config(command=_sp2s); sb_m.config(command=_sp2s)
+            sb_h.bind("<FocusOut>", _sp2s); sb_h.bind("<Return>", _sp2s)
+            sb_m.bind("<FocusOut>", _sp2s); sb_m.bind("<Return>", _sp2s)
             tk.Scale(parent, variable=var_hours, from_=from_h, to=to_h,
                      resolution=1/60, orient=tk.HORIZONTAL,
-                     bg=BG, fg=FG, highlightthickness=0,
-                     showvalue=False, length=220
-                     ).pack(padx=30, pady=(0, 2))
-
-            # Initialise spinboxes from current var value
-            _slider_to_spin()
-            return _refresh_disp
+                     bg=BG, fg=TXT, highlightthickness=0,
+                     showvalue=False, length=230
+                     ).pack(padx=4, pady=(0, 2))
+            _s2sp()
+            return _refresh
 
         def pause_slider_row(parent, label, var_mins, color):
-            """Slider row for minute values with separate hour+minute spinboxes."""
-            BG  = Color.BACKGROUND.value
-            FG  = Color.TEXT.value
-
-            tk.Label(parent, text=label, bg=BG, fg=FG,
-                     font=("Arial", 10)).pack(pady=(12, 0))
-
+            """Compact pause (minutes) slider row for inside a card."""
+            tk.Label(parent, text=label, bg=BG, fg=TXT,
+                     font=("Arial", 9)).pack(anchor="w", padx=(_LX, 4), pady=(6, 0))
             row_frame = tk.Frame(parent, bg=BG)
-            row_frame.pack()
-
+            row_frame.pack(anchor="w", padx=(_LX, 4))
             disp = tk.Label(row_frame, text="", bg=BG, fg=color,
-                            font=("Arial", 13, "bold"), width=9)
-            disp.pack(side="left", padx=(0, 10))
-
-            tk.Label(row_frame, text="h", bg=BG, fg=FG,
+                            font=("Arial", 12, "bold"))
+            disp.pack(side="left", padx=(0, 8))
+            tk.Label(row_frame, text="h", bg=BG, fg=TXT,
                      font=("Arial", 9)).pack(side="left")
             sb_h = tk.Spinbox(row_frame, from_=0, to=1, width=3,
-                              font=("Arial", 11),
-                              bg=Color.FOREGROUND.value, fg=FG,
-                              buttonbackground=Color.BUTTON.value,
-                              insertbackground=FG, relief="flat")
-            sb_h.pack(side="left", padx=(2, 6))
-
-            tk.Label(row_frame, text="min", bg=BG, fg=FG,
+                              font=("Arial", 10),
+                              bg=FG, fg=TXT, buttonbackground=BTN,
+                              insertbackground=TXT, relief="flat")
+            sb_h.pack(side="left", padx=(2, 5))
+            tk.Label(row_frame, text="min", bg=BG, fg=TXT,
                      font=("Arial", 9)).pack(side="left")
             sb_m = tk.Spinbox(row_frame, from_=0, to=59, width=3,
-                              font=("Arial", 11),
-                              bg=Color.FOREGROUND.value, fg=FG,
-                              buttonbackground=Color.BUTTON.value,
-                              insertbackground=FG, relief="flat")
+                              font=("Arial", 10),
+                              bg=FG, fg=TXT, buttonbackground=BTN,
+                              insertbackground=TXT, relief="flat")
             sb_m.pack(side="left", padx=(2, 0))
-
-            _updating = [False]
-
-            def _refresh_disp(*_):
+            _upd = [False]
+            def _refresh(*_):
                 total = var_mins.get()
-                h = int(total) // 60
-                m = int(total) % 60
                 disp.config(text=f"{total:.0f} min")
-
-            def _slider_to_spin(*_):
-                if _updating[0]: return
-                _updating[0] = True
+            def _s2sp(*_):
+                if _upd[0]: return
+                _upd[0] = True
                 total = int(round(var_mins.get()))
-                h = total // 60
-                m = total % 60
-                sb_h.delete(0, "end"); sb_h.insert(0, str(h))
-                sb_m.delete(0, "end"); sb_m.insert(0, str(m))
-                _refresh_disp()
-                _updating[0] = False
-
-            def _spin_to_slider(*_):
-                if _updating[0]: return
-                _updating[0] = True
+                sb_h.delete(0, "end"); sb_h.insert(0, str(total // 60))
+                sb_m.delete(0, "end"); sb_m.insert(0, str(total % 60))
+                _refresh(); _upd[0] = False
+            def _sp2s(*_):
+                if _upd[0]: return
+                _upd[0] = True
                 try:
                     h = max(0, min(1, int(sb_h.get())))
                     m = max(0, min(59, int(sb_m.get())))
                 except ValueError:
-                    _updating[0] = False
-                    return
-                total = h * 60 + m
-                var_mins.set(min(90, total))
-                _refresh_disp()
-                _updating[0] = False
-
-            var_mins.trace_add("write", _slider_to_spin)
-            sb_h.config(command=_spin_to_slider)
-            sb_m.config(command=_spin_to_slider)
-            sb_h.bind("<FocusOut>", _spin_to_slider)
-            sb_h.bind("<Return>",   _spin_to_slider)
-            sb_m.bind("<FocusOut>", _spin_to_slider)
-            sb_m.bind("<Return>",   _spin_to_slider)
-
+                    _upd[0] = False; return
+                var_mins.set(min(90, h * 60 + m)); _refresh(); _upd[0] = False
+            var_mins.trace_add("write", _s2sp)
+            sb_h.config(command=_sp2s); sb_m.config(command=_sp2s)
+            sb_h.bind("<FocusOut>", _sp2s); sb_h.bind("<Return>", _sp2s)
+            sb_m.bind("<FocusOut>", _sp2s); sb_m.bind("<Return>", _sp2s)
             tk.Scale(parent, variable=var_mins, from_=0, to=90,
                      resolution=1, orient=tk.HORIZONTAL,
-                     bg=BG, fg=FG, highlightthickness=0,
-                     showvalue=False, length=220
-                     ).pack(padx=30, pady=(0, 2))
+                     bg=BG, fg=TXT, highlightthickness=0,
+                     showvalue=False, length=230
+                     ).pack(padx=4, pady=(0, 2))
+            _s2sp()
+            return _refresh
 
-            _slider_to_spin()
-            return _refresh_disp
+        # ── Title bar ─────────────────────────────────────────────────────────
+        title_bar = tk.Frame(win, bg=BG)
+        title_bar.pack(fill=tk.X, padx=14, pady=(12, 6))
+        tk.Label(title_bar, text="⚙  Settings", bg=BG, fg=ACC,
+                 font=("Arial", 13, "bold")).pack(side="left")
+        tk.Frame(win, bg=BTN, height=1).pack(fill=tk.X, padx=14, pady=(0, 8))
 
-        goal_var   = tk.DoubleVar(value=self.tracker.daily_goal)
-        pause_var  = tk.DoubleVar(value=self.tracker.default_pause_mins)
-        credit_var = tk.DoubleVar(value=self.tracker.daily_credit_mins)
-        warn_var   = tk.DoubleVar(value=self.tracker.pause_warn_before_mins)
+        # ── 2×2 Grid container ────────────────────────────────────────────────
+        grid_outer = tk.Frame(win, bg=BG)
+        grid_outer.pack(fill=tk.BOTH, expand=True, padx=14, pady=(0, 10))
+        grid_outer.columnconfigure(0, weight=1, uniform="col")
+        grid_outer.columnconfigure(1, weight=1, uniform="col")
+        grid_outer.rowconfigure(0, weight=1, uniform="row")
+        grid_outer.rowconfigure(1, weight=1, uniform="row")
 
-        hhmm_slider_row(win, "Daily Work Goal:",       goal_var,  1.0, 12.0,
-                        Color.OVERTIME.value)
-        pause_slider_row(win, "Required Base Break:",  pause_var,
-                         Color.PAUSE.value)
-        slider_row(win, "Daily Credit (per day):",    credit_var,0,   60,   1,
-                   lambda v: f"{int(v)} min", Color.ACCENT.value)
-        slider_row(win, "Break warning (before 6h):", warn_var,  0,   60,   1,
+        # ── Variables ─────────────────────────────────────────────────────────
+        goal_var        = tk.DoubleVar(value=self.tracker.daily_goal)
+        pause_var       = tk.DoubleVar(value=self.tracker.default_pause_mins)
+        credit_var      = tk.DoubleVar(value=self.tracker.daily_credit_mins)
+        warn_var        = tk.DoubleVar(value=self.tracker.pause_warn_before_mins)
+        brk_after_var   = tk.DoubleVar(value=self.tracker.break_required_after_hours)
+
+        # ── Card: Work (top-left) ─────────────────────────────────────────────
+        work_card_outer = tk.Frame(grid_outer, bg=FG)
+        work_card_outer.grid(row=0, column=0, sticky="nsew", padx=(0, 5), pady=(0, 5))
+        work_inner = make_card(work_card_outer, "💼  Work", Color.OVERTIME.value)
+        hhmm_slider_row(work_inner, "Daily Goal:",
+                        goal_var, 1.0, 12.0, Color.OVERTIME.value)
+        slider_row(work_inner, "Daily Credit:",
+                   credit_var, 0, 60, 1,
+                   lambda v: f"{int(v)} min", ACC)
+
+        # ── Card: Break (top-right) ───────────────────────────────────────────
+        break_card_outer = tk.Frame(grid_outer, bg=FG)
+        break_card_outer.grid(row=0, column=1, sticky="nsew", padx=(5, 0), pady=(0, 5))
+        break_inner = make_card(break_card_outer, "☕  Break", Color.PAUSE.value)
+        pause_slider_row(break_inner, "Target Break:",
+                         pause_var, Color.PAUSE.value)
+        slider_row(break_inner, "Break Warning (min before trigger):",
+                   warn_var, 0, 60, 1,
                    lambda v: f"{int(v)} min before", Color.NEGATIVE.value)
 
+        # ── Card: Extras (bottom-left) ────────────────────────────────────────
+        extras_card_outer = tk.Frame(grid_outer, bg=FG)
+        extras_card_outer.grid(row=1, column=0, sticky="nsew", padx=(0, 5), pady=(5, 0))
+        extras_inner = make_card(extras_card_outer, "⚡  Extras", ACC)
+        slider_row(extras_inner, "Break Required After (hours):",
+                   brk_after_var, 1.0, 12.0, 0.5,
+                   lambda v: f"{v:.1f} h", ACC)
+
+        def hard_reset():
+            if messagebox.askyesno("Hard Reset",
+                                   "Really reset everything?\nBalance + current session will be cleared."):
+                self.tracker.total_balance_seconds = 0.0
+                self.tracker.reset_values()
+                self.tracker.save_data()
+                win.destroy()
+
+        # ── Card: Correction (bottom-right) ───────────────────────────────────
+        corr_card_outer = tk.Frame(grid_outer, bg=FG)
+        corr_card_outer.grid(row=1, column=1, sticky="nsew", padx=(5, 0), pady=(5, 0))
+        corr_inner = make_card(corr_card_outer, "🔧  Correction", Color.ACCENT.value)
+
+        # apply callback (wired after all vars exist)
         def apply(*_):
-            self.tracker.daily_goal             = goal_var.get()
-            self.tracker.default_pause_mins     = pause_var.get()
-            self.tracker.daily_credit_mins      = credit_var.get()
-            self.tracker.pause_warn_before_mins = warn_var.get()
+            self.tracker.daily_goal                 = goal_var.get()
+            self.tracker.default_pause_mins         = pause_var.get()
+            self.tracker.daily_credit_mins          = credit_var.get()
+            self.tracker.pause_warn_before_mins     = warn_var.get()
+            self.tracker.break_required_after_hours = brk_after_var.get()
             self.tracker.save_data()
 
-        for v in (goal_var, pause_var, credit_var, warn_var):
+        for v in (goal_var, pause_var, credit_var, warn_var, brk_after_var):
             v.trace_add("write", apply)
 
-        bf = tk.Frame(win, bg=Color.BACKGROUND.value)
-        bf.pack(pady=(14, 6), padx=20)
-
+        # ── Correction buttons (defined inline, placed in corr_inner) ─────────
         def open_already_checked_in():
             """Open a dialog to retroactively set today's check-in time (migration helper)."""
             if self.tracker.start_time_stamp > 0:
@@ -1181,10 +1531,10 @@ class TrackMe:
             wy = win.winfo_y() + (win.winfo_height() - dlg.winfo_reqheight()) // 2
             dlg.geometry(f"+{max(0,wx)}+{max(0,wy)}")
 
-        tk.Button(bf, text="⏱  Already Checked In",
+        tk.Button(corr_inner, text="⏱  Already Checked In",
                   bg=Color.ACCENT.value, fg=Color.TEXT.value,
-                  font=("Arial", 10, "bold"), bd=0, padx=10, pady=6,
-                  command=open_already_checked_in).pack(fill=tk.X, pady=3)
+                  font=("Arial", 9, "bold"), bd=0, padx=8, pady=5,
+                  command=open_already_checked_in, relief="flat").pack(fill=tk.X, padx=4, pady=(8, 3))
 
         def open_correct_pause():
             """Open a dialog to retroactively add a break to the current session (migration helper)."""
@@ -1336,23 +1686,15 @@ class TrackMe:
             wy = win.winfo_y() + (win.winfo_height() - dlg.winfo_reqheight()) // 2
             dlg.geometry(f"+{max(0,wx)}+{max(0,wy)}")
 
-        tk.Button(bf, text="☕  Correct Break",
+        tk.Button(corr_inner, text="☕  Correct Break",
                   bg=Color.PAUSE.value, fg=Color.TEXT.value,
-                  font=("Arial", 10, "bold"), bd=0, padx=10, pady=6,
-                  command=open_correct_pause).pack(fill=tk.X, pady=3)
+                  font=("Arial", 9, "bold"), bd=0, padx=8, pady=5,
+                  command=open_correct_pause, relief="flat").pack(fill=tk.X, padx=4, pady=3)
 
-        def hard_reset():
-            if messagebox.askyesno("Hard Reset",
-                                   "Really reset everything?\nBalance + current session will be cleared."):
-                self.tracker.total_balance_seconds = 0.0
-                self.tracker.reset_values()
-                self.tracker.save_data()
-                win.destroy()
-
-        tk.Button(bf, text="Hard Reset (Balance + Session)",
+        tk.Button(corr_inner, text="🗑  Hard Reset (Balance + Session)",
                   bg=Color.TEST.value, fg=Color.TEXT.value,
-                  font=("Arial", 10), bd=0, padx=10, pady=6,
-                  command=hard_reset).pack(fill=tk.X, pady=3)
+                  font=("Arial", 9, "bold"), bd=0, padx=8, pady=5,
+                  command=hard_reset, relief="flat").pack(fill=tk.X, padx=4, pady=3)
 
         win.protocol("WM_DELETE_WINDOW", lambda: [apply(), win.destroy()])
 
@@ -1567,8 +1909,28 @@ class TrackMe:
             tk.Frame(cards_frame, bg=BTN, height=1).pack(fill=tk.X, padx=6, pady=(2, 2))
 
             today = datetime.now().date()
-            for i in range(n_days):
-                day        = today + timedelta(days=i)
+
+            # compute needed day range due to sundays and potrentialy skipped saturdays
+            target = days_var.get()
+            calendar_days = []  # all days to display (including skipped ones)
+            productive = 0
+            offset = 1
+
+            while productive < target:
+                day = today + timedelta(days=offset)
+                is_sunday   = day.weekday() == 6
+                is_saturday = day.weekday() == 5
+                is_skipped  = is_sunday or (is_saturday and skip_sat_var.get())
+                
+                calendar_days.append((day, is_skipped))
+                
+                if not is_skipped:
+                    productive += 1
+                
+                offset += 1
+            
+            # create cards
+            for day, is_skipped in calendar_days:
                 is_weekend = day.weekday() >= 5
 
                 is_sunday   = day.weekday() == 6
@@ -1610,6 +1972,11 @@ class TrackMe:
                         tk.Label(card, text=val, bg=card_bg, fg=clr,
                                  font=("Arial", 10, "bold"),
                                  width=8, anchor="w").pack(side="left", pady=7)
+            
+            if len(calendar_days) > 10:
+                vsb.pack(side="right", fill="y")
+            else:
+                vsb.pack_forget()
 
         def _on_change(*_): compute(force=True)
         bal_var.trace_add("write",  _on_change)
@@ -1624,6 +1991,7 @@ class TrackMe:
             canvas.unbind_all("<MouseWheel>")
             win.destroy()
         win.protocol("WM_DELETE_WINDOW", _on_close)
+
     def format_seconds(self, seconds):
         neg = seconds < 0
         s   = abs(int(seconds))
@@ -1685,12 +2053,12 @@ class TrackMe:
             def _draw_bar(canvas, progress, color, label=""):
                 canvas.delete("all")
                 bw, bh = self._bar_w, self._bar_h
-                canvas.create_rectangle(0, 0, bw, bh, fill="#2a2a3e", outline="")
+                canvas.create_rectangle(0, 0, bw, bh, fill=Color.BAR_EMPTY.value, outline="")
                 fill_w = int(bw * min(1.0, progress))
                 if fill_w > 0:
                     canvas.create_rectangle(0, 0, fill_w, bh, fill=color, outline="")
                 canvas.create_text(bw // 2, bh // 2, text=label,
-                                fill="white", font=("Arial", 8, "bold"))
+                                fill=Color.BAR_TEXT.value, font=("Arial", 8, "bold"))
 
             # Row 3: Worked label + work progress bar
             g_h = int(self.tracker.daily_goal)
@@ -1753,7 +2121,7 @@ class TrackMe:
             self.pause_info.config(text=p_text)
 
             # ── Pause warnings ────────────────────────────────────────────────
-            six_hours_s   = 6 * 3600
+            six_hours_s   = self.tracker.break_required_after_hours * 3600
             warn_before_s = self.tracker.pause_warn_before_mins * 60
             until_6h      = six_hours_s - work_elapsed
             if (0 <= until_6h <= warn_before_s) and not self._notified_pause_warn and total_pause_done == 0:
@@ -1822,6 +2190,7 @@ class TrackMe:
 
 # ── Entry point ───────────────────────────────────────────────────────────────
 if __name__ == "__main__":
+    _apply_theme(_load_active_theme_name())
     root = tk.Tk()
     app  = TrackMe(root)
     root.mainloop()
