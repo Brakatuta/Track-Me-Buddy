@@ -1,5 +1,4 @@
 # 🕐 TrackMe Buddy
-
 A dark-themed desktop time tracker for Windows, built with Python and Tkinter.  
 Designed for use with the **NovaTime** web-based time tracking system, but works fully standalone without it.
 
@@ -17,6 +16,8 @@ Designed for use with the **NovaTime** web-based time tracking system, but works
 - **System tray** integration with context menu
 - **Desktop notifications** for goal reached, pause complete and upcoming mandatory break
 - **NovaTime API integration** — automatically books via browser automation (Playwright + Edge/Chrome)
+- **Bored?** — launches a game executable from the same directory
+- **Theme switcher** — choose between Dark Mode, Dracula and Blue Theme; applies instantly
 - Save files stored in a dedicated `save/` folder — works both as script and compiled exe
 
 ---
@@ -31,7 +32,7 @@ Designed for use with the **NovaTime** web-based time tracking system, but works
 ### Install dependencies
 
 ```bash
-pip install customtkinter pystray pillow playwright
+pip install pystray pillow playwright plyer
 playwright install chromium
 ```
 
@@ -45,14 +46,31 @@ python main.py
 
 ## ⚙️ Settings
 
-Open the **⚙ Settings** window to configure:
+Open the **⚙ Settings** window to configure. Settings are arranged in a 2×2 card grid:
 
+### 💼 Work
 | Setting | Default | Description |
 |---|---|---|
-| Daily Goal | 8.0 h | Target work hours per day |
-| Default Pause | 30 min | Required break duration |
+| Daily Goal | 8:00 h | Target work hours per day (HH:MM with spinboxes) |
 | Daily Credit | 0 min | Minutes credited per day (reduces effective goal) |
-| Pause Warning | 15 min | How early to warn before 6h mandatory break threshold |
+
+### ☕ Break
+| Setting | Default | Description |
+|---|---|---|
+| Target Break | 30 min | Required break duration |
+| Break Warning | 15 min | How many minutes before the mandatory break threshold to warn |
+
+### ⚡ Extras
+| Setting | Default | Description |
+|---|---|---|
+| Break Required After | 6.0 h | Hours of work after which a break becomes mandatory |
+
+### 🔧 Correction
+Buttons for retroactively fixing the current session — no API calls are made:
+
+- **⏱ Already Checked In** — set a past clock-in time for today's session
+- **☕ Correct Break** — add a missed break to the current session
+- **🗑 Hard Reset** — clears balance and current session completely
 
 ---
 
@@ -74,9 +92,9 @@ Open the **🔌 API** window and enter:
 Click **◑ AutoOvertime** to open the planner. Use the sliders to:
 
 1. Set your **balance to clear** (−12h to +12h in 10-minute steps, pre-filled from Nova)
-2. Choose how many **days** to spread it over (1–14)
+2. Choose how many **days** to spread it over (1–31)
 3. Pin either your **Arrive** or **Leave** time
-4. Optionally **skip Saturdays** (and Sundays are always skipped)
+4. Optionally **skip Saturdays** (Sundays are always skipped)
 
 The right panel shows a card for each day with exact arrive, leave, work and pause times.
 
@@ -89,6 +107,7 @@ The right panel shows a card for each day with exact arrive, leave, work and pau
 | `tkinter` | UI framework (stdlib) |
 | `pystray` | System tray icon |
 | `Pillow` | Image handling for tray icon |
+| `plyer` | Desktop notifications |
 | `playwright` | Browser automation for NovaTime |
 
 ---
