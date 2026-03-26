@@ -2,8 +2,6 @@
 A dark-themed desktop time tracker for Windows, built with Python and Tkinter.  
 Designed for use with the **NovaTime** web-based time tracking system, but works fully standalone without it.
 
-<img width="1407" height="1083" alt="grafik" src="https://github.com/user-attachments/assets/28d580ec-224d-4413-8dc2-6abe0b5f8336" />
-
 
 ---
 
