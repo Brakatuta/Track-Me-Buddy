@@ -4,23 +4,24 @@ Designed for use with the **NovaTime** web-based time tracking system, but works
 
 <img width="1407" height="1083" alt="grafik" src="https://github.com/user-attachments/assets/28d580ec-224d-4413-8dc2-6abe0b5f8336" />
 
-
 ---
 
 ## ✨ Features
 
 - **Live clock** with weekday, date and time display
+- **Tile-based dashboard** — resizable window with four info tiles (Worked, Core Hours, Break, Leave)
 - **Work progress bar** — fills as you work towards your daily goal, turns green on overtime
 - **Pause progress bar** — tracks your mandatory break time
 - **Live balance** — fetched from NovaTime and ticked every second in real time
 - **Leave at** — calculates your target leave time based on goal, pause and daily credit
+- **Overtime indicator** — shows current OT with correct ±sign in the Leave tile, colour-coded green/red
 - **AutoOvertime Planner** — plan how to work down your balance over N days with arrive/leave times per day
+- **Mitarbeiterjournal** — fetch and display your full monthly time-tracking journal in a scrollable table, with a refresh button
 - **Business Trip** tracking (Dienstgang)
 - **System tray** integration with context menu
-- **Desktop notifications** for goal reached, pause complete and upcoming mandatory break
+- **Desktop notifications** for goal reached, pause complete and upcoming mandatory break — can be disabled per session
 - **NovaTime API integration** — automatically books via browser automation (Playwright + Edge/Chrome)
-- **Bored?** — launches a game executable from the same directory
-- **Theme switcher** — choose between Dark Mode, Dracula and Blue Theme; applies instantly
+- **Theme switcher** — choose between Dark Mode, Dracula and Blue Theme; applies instantly without restart
 - Save files stored in a dedicated `save/` folder — works both as script and compiled exe
 
 ---
@@ -67,6 +68,7 @@ Open the **⚙ Settings** window to configure. Settings are arranged in a 2×2 c
 | Setting | Default | Description |
 |---|---|---|
 | Break Required After | 6.0 h | Hours of work after which a break becomes mandatory |
+| Disable Notifications | off | Toggle to silence all desktop notifications for the current session |
 
 ### 🔧 Correction
 Buttons for retroactively fixing the current session — no API calls are made:
@@ -77,14 +79,46 @@ Buttons for retroactively fixing the current session — no API calls are made:
 
 ---
 
+## 🎨 Theme Switcher
+
+Click **🎨 Theme** in the header bar to open the theme picker. Three built-in themes are available, each applied instantly across the entire UI without a restart:
+
+| Theme | Description |
+|---|---|
+| **Dark Mode** | Default dark grey with blue accents |
+| **Dracula** | Purple/pink accents on a deep dark background |
+| **Blue Theme** | Navy base with cyan and teal highlights |
+
+The active theme is saved to `save/theme.json` and restored automatically on next launch.
+
+---
+
+## 📋 Mitarbeiterjournal
+
+Click **📋 Journal** in the header bar to open your monthly time-tracking journal fetched directly from NovaTime.
+
+- Displays the full journal table for the current month in a **scrollable grid** (horizontal and vertical)
+- Columns shown: weekday, date, clock-in/out times, booking type, actual/target hours, break, daily saldo, total saldo, comments
+- **Positive/negative saldo** values are colour-coded green and red automatically
+- **Today's row** is highlighted
+- Summary rows (e.g. Nachtzuschlag totals) are shown at the bottom
+- Use the **🔄 Refresh** button to re-fetch the latest data without closing the window
+
+> Requires the **NovaTime User Journal URL** to be configured in the **🔌 API** settings.
+
+---
+
 ## 🔌 NovaTime API Integration
 
 Open the **🔌 API** window and enter:
 
-- **NovaTime URL** — your company's NovaTime web address
-- **Username / Password** — your NovaTime login
-- **Proxy Auth** — HTTP basic auth credentials if behind a corporate proxy
-- **Show NovaTime Window** — uncheck for headless (invisible) browser automation
+| Field | Description |
+|---|---|
+| NovaTime URL | Your company's main NovaTime web address (used for clock-in/out bookings) |
+| NovaTime User Journal URL | Separate URL for the Mitarbeiterjournal page (required for the Journal feature) |
+| Username / Password | Your NovaTime login credentials |
+| Proxy Auth | HTTP basic auth credentials if behind a corporate proxy |
+| Show NovaTime Window | Uncheck for headless (invisible) browser automation |
 
 > NovaTime integration requires Microsoft Edge or Google Chrome to be installed.
 
