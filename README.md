@@ -2,7 +2,8 @@
 A dark-themed desktop time tracker for Windows, built with Python and Tkinter.  
 Designed for use with the **NovaTime** web-based time tracking system, but works fully standalone without it.
 
-<img width="1407" height="1083" alt="grafik" src="https://github.com/user-attachments/assets/28d580ec-224d-4413-8dc2-6abe0b5f8336" />
+<img width="555" height="505" alt="Screenshot 2026-03-26 160015" src="https://github.com/user-attachments/assets/efadead5-15c7-450e-9e2c-eb2ebcfa9c44" />
+
 
 ---
 
@@ -50,6 +51,9 @@ python main.py
 
 ## ⚙️ Settings
 
+<img width="616" height="489" alt="Screenshot 2026-03-26 155959" src="https://github.com/user-attachments/assets/d93aded1-58b9-42b5-a6da-8091b96ca83a" />
+
+
 Open the **⚙ Settings** window to configure. Settings are arranged in a 2×2 card grid:
 
 ### 💼 Work
@@ -81,6 +85,9 @@ Buttons for retroactively fixing the current session — no API calls are made:
 
 ## 🎨 Theme Switcher
 
+<img width="229" height="262" alt="Screenshot 2026-03-26 155947" src="https://github.com/user-attachments/assets/112dca52-1a90-4aab-87bc-453efb27454b" />
+
+
 Click **🎨 Theme** in the header bar to open the theme picker. Three built-in themes are available, each applied instantly across the entire UI without a restart:
 
 | Theme | Description |
@@ -94,6 +101,9 @@ The active theme is saved to `save/theme.json` and restored automatically on nex
 ---
 
 ## 📋 User Journal (NovaTime specific)
+
+<img width="999" height="857" alt="Screenshot 2026-03-26 155918" src="https://github.com/user-attachments/assets/9faadb4c-38b6-4610-a897-55c18ed682f3" />
+
 
 Click **📋 Journal** in the header bar to open your monthly time-tracking journal fetched directly from NovaTime.
 
@@ -110,6 +120,9 @@ Click **📋 Journal** in the header bar to open your monthly time-tracking jour
 
 ## 🔌 NovaTime API Integration
 
+<img width="603" height="646" alt="Screenshot 2026-03-26 155938" src="https://github.com/user-attachments/assets/60229ee0-9055-4a30-a348-db51d4a4fae0" />
+
+
 Open the **🔌 API** window and enter:
 
 | Field | Description |
@@ -125,6 +138,10 @@ Open the **🔌 API** window and enter:
 ---
 
 ## 📊 AutoOvertime Planner
+
+<img width="800" height="567" alt="Screenshot 2026-03-26 155927" src="https://github.com/user-attachments/assets/eff2bd20-078e-4111-b772-345ecf8bd30e" />
+
+
 
 Click **◑ AutoOvertime** to open the planner. Use the sliders to:
 
