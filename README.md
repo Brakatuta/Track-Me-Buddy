@@ -16,7 +16,7 @@ Designed for use with the **NovaTime** web-based time tracking system, but works
 - **Leave at** — calculates your target leave time based on goal, pause and daily credit
 - **Overtime indicator** — shows current OT with correct ±sign in the Leave tile, colour-coded green/red
 - **AutoOvertime Planner** — plan how to work down your balance over N days with arrive/leave times per day
-- **Mitarbeiterjournal** — fetch and display your full monthly time-tracking journal in a scrollable table, with a refresh button
+- **User Journal** — fetch and display your full monthly time-tracking journal in a scrollable table, with a refresh button (NovaTime-only feature)
 - **Business Trip** tracking (Dienstgang)
 - **System tray** integration with context menu
 - **Desktop notifications** for goal reached, pause complete and upcoming mandatory break — can be disabled per session
@@ -93,7 +93,7 @@ The active theme is saved to `save/theme.json` and restored automatically on nex
 
 ---
 
-## 📋 Mitarbeiterjournal
+## 📋 User Journal (NovaTime specific)
 
 Click **📋 Journal** in the header bar to open your monthly time-tracking journal fetched directly from NovaTime.
 
@@ -115,7 +115,7 @@ Open the **🔌 API** window and enter:
 | Field | Description |
 |---|---|
 | NovaTime URL | Your company's main NovaTime web address (used for clock-in/out bookings) |
-| NovaTime User Journal URL | Separate URL for the Mitarbeiterjournal page (required for the Journal feature) |
+| NovaTime User Journal URL | Separate URL for the User Journal page (required for the Journal feature) |
 | Username / Password | Your NovaTime login credentials |
 | Proxy Auth | HTTP basic auth credentials if behind a corporate proxy |
 | Show NovaTime Window | Uncheck for headless (invisible) browser automation |
