@@ -102,7 +102,7 @@ The active theme is saved to `save/theme.json` and restored automatically on nex
 
 ## 📋 User Journal (NovaTime specific)
 
-<img width="999" height="857" alt="Screenshot 2026-03-26 155918" src="https://github.com/user-attachments/assets/9faadb4c-38b6-4610-a897-55c18ed682f3" />
+<img width="999" height="857" alt="Screenshot 2026-03-26 155918" src="https://github.com/user-attachments/assets/0f49f8af-1021-4665-a14e-9406d28e4efd" />
 
 
 Click **📋 Journal** in the header bar to open your monthly time-tracking journal fetched directly from NovaTime.
