@@ -4,7 +4,6 @@ import time
 import json
 import os
 import threading
-import subprocess
 from pathlib import Path
 import math
 from datetime import datetime, timedelta
@@ -227,6 +226,7 @@ class NovaConfig:
 
     DEFAULTS = {
         "url":                "",
+        "url_journal":        "",
         "username":           "",
         "password":           "",
         "proxy_auth_username":"",
@@ -284,6 +284,7 @@ class Tracker:
         self.daily_credit_mins           = 0.0
         self.pause_warn_before_mins      = 15.0
         self.break_required_after_hours  = 6.0
+        self.notifications_disabled      = False
         self.load_data()
 
     def reset_values(self):
@@ -348,6 +349,7 @@ class Tracker:
             "pause_warn_before_mins": self.pause_warn_before_mins,
             "is_on_dienstgang":       self.is_on_dienstgang,
             "break_required_after_hours": self.break_required_after_hours,
+            "notifications_disabled":     self.notifications_disabled,
         }
         with open(self.file_path, "w") as f:
             json.dump(data, f, indent=4)
@@ -370,6 +372,7 @@ class Tracker:
                 self.pause_warn_before_mins = d.get("pause_warn_before_mins", 15.0)
                 self.is_on_dienstgang       = d.get("is_on_dienstgang", False)
                 self.break_required_after_hours = d.get("break_required_after_hours", 6.0)
+                self.notifications_disabled     = d.get("notifications_disabled", False)
             except Exception as e:
                 print(f"Load error: {e}")
 
@@ -412,8 +415,9 @@ class TrackMe:
     def _setup_window(self):
         self.master.title("Track Me Buddy")
         self.master.config(bg=Color.BACKGROUND.value)
-        self.master.geometry("500x445")
-        self.master.resizable(False, False)
+        self.master.geometry("560x480")
+        self.master.minsize(540, 480)
+        self.master.resizable(True, True)
         if os.path.exists(self.icon_ico):
             try: self.master.iconbitmap(self.icon_ico)
             except Exception: pass
@@ -525,18 +529,42 @@ class TrackMe:
             print(f"Notify error: {e}")
 
     def _fire_notify(self, title, message):
+        if self.tracker.notifications_disabled:
+            return
         threading.Thread(target=self._notify, args=(title, message), daemon=True).start()
 
     # ── UI ────────────────────────────────────────────────────────────────────
+    # ── Tile factory ──────────────────────────────────────────────────────────
+    def _make_tile(self, parent, title=""):
+        """Create a rounded-corner-style tile (Frame with inner padding + title label)."""
+        outer = tk.Frame(parent, bg=Color.BACKGROUND.value,
+                         highlightbackground=Color.BUTTON.value,
+                         highlightthickness=1)
+        if title:
+            tk.Label(outer, text=title, bg=Color.BACKGROUND.value,
+                     fg=Color.ACCENT.value, font=("Arial", 8, "bold")).pack(
+                anchor="nw", padx=8, pady=(6, 0))
+        inner = tk.Frame(outer, bg=Color.BACKGROUND.value)
+        inner.pack(fill=tk.BOTH, expand=True, padx=8, pady=(2, 8))
+        return outer, inner
+
     def _build_ui(self):
-        self.main_frame = tk.Frame(self.master, bg=Color.FOREGROUND.value)
-        self.main_frame.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+        BG  = Color.BACKGROUND.value
+        FG  = Color.FOREGROUND.value
+        TXT = Color.TEXT.value
 
-        # ── Header ────────────────────────────────────────────────────────────
-        header = tk.Frame(self.main_frame, bg=Color.FOREGROUND.value)
-        header.pack(fill=tk.X, padx=10, pady=5)
+        # ── Outer shell ───────────────────────────────────────────────────────
+        self.main_frame = tk.Frame(self.master, bg=FG)
+        self.main_frame.pack(padx=8, pady=8, fill=tk.BOTH, expand=True)
+        self.main_frame.columnconfigure(0, weight=1)
+        self.main_frame.columnconfigure(1, weight=1)
+        # rows: header-bar | date tile | worked/break row | buttons
+        self.main_frame.rowconfigure(2, weight=1)
 
-        # Right side of header: Settings | API (right-to-left order)
+        # ── Header bar ────────────────────────────────────────────────────────
+        header = tk.Frame(self.main_frame, bg=FG)
+        header.grid(row=0, column=0, columnspan=2, sticky="ew", padx=6, pady=(6, 4))
+
         self.hdr_settings_btn = tk.Button(header, text="⚙ Settings",
                   bg=Color.BTN_SETTINGS_BG.value, fg=Color.BTN_SETTINGS_FG.value,
                   activebackground=Color.BTN_SETTINGS_BG.value, activeforeground=Color.BTN_SETTINGS_FG.value,
@@ -555,11 +583,11 @@ class TrackMe:
                   command=self.open_auto_overtime, font=("Arial", 10), bd=0, padx=10, relief="flat")
         self.hdr_overtime_btn.pack(side="right", padx=(0, 4))
 
-        self.hdr_bored_btn = tk.Button(header, text="🎮 Bored?",
+        self.hdr_journal_btn = tk.Button(header, text="📋 Journal",
                   bg=Color.BTN_BORED_BG.value, fg=Color.BTN_BORED_FG.value,
                   activebackground=Color.BTN_BORED_BG.value, activeforeground=Color.BTN_BORED_FG.value,
-                  command=self._launch_game, font=("Arial", 10, "bold"), bd=0, padx=10, relief="flat")
-        self.hdr_bored_btn.pack(side="right", padx=(0, 4))
+                  command=self.open_journal, font=("Arial", 10, "bold"), bd=0, padx=10, relief="flat")
+        self.hdr_journal_btn.pack(side="right", padx=(0, 4))
 
         self.hdr_theme_btn = tk.Button(header, text="🎨 Theme",
                   bg=Color.BTN_THEME_BG.value, fg=Color.BTN_THEME_FG.value,
@@ -567,71 +595,128 @@ class TrackMe:
                   command=self.open_theme_picker, font=("Arial", 10), bd=0, padx=10, relief="flat")
         self.hdr_theme_btn.pack(side="right", padx=(0, 4))
 
-        # ── Info area ─────────────────────────────────────────────────────────
-        self.info_frame = tk.Frame(self.main_frame, bg=Color.BACKGROUND.value, height=300)
-        self.info_frame.pack_propagate(False)
-        self.info_frame.pack(side="top", padx=10, pady=10, fill=tk.X)
+        # ── Row 1: Date / Time + Balance tile (full width) ────────────────────
+        date_outer, date_inner = self._make_tile(self.main_frame)
+        date_outer.grid(row=1, column=0, columnspan=2, sticky="nsew", padx=6, pady=(0, 4))
 
-        BG  = Color.BACKGROUND.value
-        TXT = Color.TEXT.value
+        # Left: date stacked above time
+        dt_stack = tk.Frame(date_inner, bg=BG)
+        dt_stack.pack(side="left", padx=(4, 24), pady=6)
 
-        # Row 1: Weekday + Date + Time
-        self.time_display = tk.Label(self.info_frame, bg=BG,
-                                     fg=TXT, font=("Arial", 22, "bold"))
-        self.time_display.pack(anchor="nw", padx=10, pady=(10, 2))
+        self.date_display = tk.Label(dt_stack, bg=BG, fg=TXT, font=("Arial", 13, "bold"))
+        self.date_display.pack(anchor="w")
 
-        # Row 2: Balance
-        self.balance_account_label = tk.Label(self.info_frame, text="",
-            bg=BG, fg=Color.OVERTIME.value, font=("Arial", 20, "bold"))
-        self.balance_account_label.pack(anchor="nw", padx=10, pady=(0, 6))
+        self.time_display = tk.Label(dt_stack, bg=BG, fg=TXT, font=("Arial", 24, "bold"))
+        self.time_display.pack(anchor="w")
 
-        tk.Frame(self.info_frame, bg=Color.BUTTON.value, height=1).pack(
-            fill=tk.X, padx=10, pady=(0, 8))
+        # Right: Balance
+        self.balance_account_label = tk.Label(date_inner, text="",
+            bg=BG, fg=Color.OVERTIME.value, font=("Arial", 18, "bold"))
+        self.balance_account_label.pack(side="left", pady=6)
 
-        # Row 3: Worked label + progress bar
-        self.worked_label = tk.Label(self.info_frame, bg=BG,
-                                     fg=TXT, font=("Arial", 16, "bold"))
-        self.worked_label.pack(anchor="nw", padx=10, pady=(0, 3))
+        # ── Row 2: 2×2 tile grid ─────────────────────────────────────────────
+        grid_frame = tk.Frame(self.main_frame, bg=FG)
+        grid_frame.grid(row=2, column=0, columnspan=2, sticky="nsew", padx=6, pady=(0, 4))
+        grid_frame.columnconfigure(0, weight=1)
+        grid_frame.columnconfigure(1, weight=1)
+        grid_frame.rowconfigure(0, weight=1)
+        grid_frame.rowconfigure(1, weight=1)
 
-        self._bar_h = 16
-        self._bar_w = 340
-        self.work_bar_canvas = tk.Canvas(self.info_frame, bg=BG,
-                                         width=self._bar_w, height=self._bar_h,
+        # ── Tile: Worked (top-left) ───────────────────────────────────────────
+        worked_outer, worked_inner = self._make_tile(grid_frame, "⏱  WORKED")
+        worked_outer.grid(row=0, column=0, sticky="nsew", padx=(0, 3), pady=(0, 3))
+        worked_inner.columnconfigure(0, weight=1)
+
+        self.worked_label = tk.Label(worked_inner, bg=BG, fg=TXT,
+                                     font=("Arial", 15, "bold"), anchor="w")
+        self.worked_label.grid(row=0, column=0, sticky="ew", pady=(4, 2))
+
+        self.work_bar_canvas = tk.Canvas(worked_inner, bg=BG, height=14,
                                          highlightthickness=0)
-        self.work_bar_canvas.pack(anchor="nw", padx=10, pady=(0, 6))
+        self.work_bar_canvas.grid(row=1, column=0, sticky="ew", pady=(0, 4))
 
-        # Row 4: Work Left / Goal Reached label + progress bar
-        self.work_hours_left = tk.Label(self.info_frame, bg=BG,
-                                        fg=TXT, font=("Arial", 16, "bold"))
-        self.work_hours_left.pack(anchor="nw", padx=10, pady=(0, 3))
+        self.work_hours_left = tk.Label(worked_inner, bg=BG, fg=TXT,
+                                        font=("Arial", 13, "bold"), anchor="w")
+        self.work_hours_left.grid(row=2, column=0, sticky="ew", pady=(0, 2))
 
-        # Row 5: Pause info text
-        self.pause_info = tk.Label(self.info_frame, bg=BG,
-                                   fg=Color.PAUSE.value, font=("Arial", 13, "bold"))
-        self.pause_info.pack(anchor="nw", padx=10, pady=(0, 4))
+        # ── Tile: Core Hours (top-right) ──────────────────────────────────────
+        core_outer, core_inner = self._make_tile(grid_frame, "🕘  CORE HOURS")
+        core_outer.grid(row=0, column=1, sticky="nsew", padx=(3, 0), pady=(0, 3))
+        core_inner.columnconfigure(0, weight=1)
 
-        self.pause_bar_canvas = tk.Canvas(self.info_frame, bg=BG,
-                                          width=self._bar_w, height=self._bar_h,
+        # Clock-in time → projected end
+        self.core_clockin_label = tk.Label(core_inner, bg=BG, fg=TXT,
+                                           font=("Arial", 13, "bold"), anchor="w")
+        self.core_clockin_label.grid(row=0, column=0, sticky="ew", pady=(4, 2))
+
+        self.core_arrow_label = tk.Label(core_inner, bg=BG, fg=Color.ACCENT.value,
+                                         font=("Arial", 20, "bold"), anchor="w")
+        self.core_arrow_label.grid(row=1, column=0, sticky="ew", pady=(0, 2))
+
+        self.core_sub_label = tk.Label(core_inner, bg=BG, fg=Color.BUTTON.value,
+                                       font=("Arial", 9), anchor="w")
+        self.core_sub_label.grid(row=2, column=0, sticky="ew", pady=(0, 4))
+
+        # ── Tile: Break (bottom-left) ─────────────────────────────────────────
+        break_outer, break_inner = self._make_tile(grid_frame, "☕  BREAK")
+        break_outer.grid(row=1, column=0, sticky="nsew", padx=(0, 3), pady=(3, 0))
+        break_inner.columnconfigure(0, weight=1)
+
+        self.pause_info = tk.Label(break_inner, bg=BG, fg=Color.PAUSE.value,
+                                   font=("Arial", 13, "bold"), anchor="w")
+        self.pause_info.grid(row=0, column=0, sticky="ew", pady=(4, 2))
+
+        self.pause_bar_canvas = tk.Canvas(break_inner, bg=BG, height=14,
                                           highlightthickness=0)
-        self.pause_bar_canvas.pack(anchor="nw", padx=10, pady=(0, 6))     
+        self.pause_bar_canvas.grid(row=1, column=0, sticky="ew", pady=(0, 4))
 
-        # Row 5: Target leave time
-        self.you_can_go_in = tk.Label(self.info_frame, bg=BG,
-                                      fg=Color.ACCENT.value, font=("Arial", 17, "bold"))
-        self.you_can_go_in.pack(anchor="nw", padx=10, pady=(0, 2))   
+        self.break_deadline_label = tk.Label(break_inner, bg=BG, fg=Color.TEXT.value,
+                                             font=("Arial", 11), anchor="w")
+        self.break_deadline_label.grid(row=2, column=0, sticky="ew", pady=(0, 4))
 
-        # ── Button row: Work | Business Trip | Pause ──────────────────────────
-        self.btn_frame = tk.Frame(self.main_frame, bg=Color.FOREGROUND.value)
-        self.btn_frame.pack(side="bottom", pady=(10, 20))
+        # ── Tile: Leave (bottom-right) ────────────────────────────────────────
+        leave_outer, leave_inner = self._make_tile(grid_frame, "🚪  LEAVE")
+        leave_outer.grid(row=1, column=1, sticky="nsew", padx=(3, 0), pady=(3, 0))
+        leave_inner.columnconfigure(0, weight=1)
 
-        BTN_W = 18
+        self.you_can_go_in = tk.Label(leave_inner, bg=BG, fg=Color.ACCENT.value,
+                                      font=("Arial", 20, "bold"), anchor="w")
+        self.you_can_go_in.grid(row=0, column=0, sticky="ew", pady=(4, 2))
+
+        self.leave_overtime_label = tk.Label(leave_inner, bg=BG, fg=Color.OVERTIME.value,
+                                             font=("Arial", 13, "bold"), anchor="w")
+        self.leave_overtime_label.grid(row=1, column=0, sticky="ew", pady=(0, 2))
+
+        self.leave_sub_label = tk.Label(leave_inner, bg=BG, fg=Color.BUTTON.value,
+                                        font=("Arial", 9), anchor="w")
+        self.leave_sub_label.grid(row=2, column=0, sticky="ew", pady=(0, 4))
+
+        # ── Bar width tracking: resize canvases when tiles resize ─────────────
+        self._bar_h = 14
+        self._bar_w = 200  # fallback; updated dynamically
+
+        def _on_worked_resize(event):
+            self._bar_w = max(60, event.width - 4)
+            self.work_bar_canvas.config(width=self._bar_w)
+        def _on_break_resize(event):
+            self.pause_bar_canvas.config(width=max(60, event.width - 4))
+
+        worked_inner.bind("<Configure>", _on_worked_resize)
+        break_inner.bind("<Configure>", _on_break_resize)
+
+        # ── Button row ────────────────────────────────────────────────────────
+        self.btn_frame = tk.Frame(self.main_frame, bg=FG)
+        self.btn_frame.grid(row=3, column=0, columnspan=2, sticky="ew",
+                            padx=6, pady=(0, 6))
+
+        self.main_frame.rowconfigure(3, weight=0)
 
         self.start_button = tk.Button(self.btn_frame, text="Clock In",
                                       bg=Color.BTN_CLOCKIN_BG.value, fg=Color.BTN_CLOCKIN_FG.value,
                                       activebackground=Color.BTN_CLOCKIN_BG.value, activeforeground=Color.BTN_CLOCKIN_FG.value,
                                       command=self.handle_start_stop, relief="flat",
-                                      font=("Arial", 11, "bold"), width=BTN_W, pady=10)
-        self.start_button.pack(side="left", padx=6)
+                                      font=("Arial", 11, "bold"), pady=10)
+        self.start_button.pack(side="left", padx=6, expand=True, fill=tk.X)
 
         self.dienstgang_button = tk.Button(
             self.btn_frame,
@@ -639,16 +724,16 @@ class TrackMe:
             bg=Color.BTN_TRIP_BG.value, fg=Color.BTN_TRIP_FG.value,
             activebackground=Color.BTN_TRIP_BG.value, activeforeground=Color.BTN_TRIP_FG.value,
             command=self.handle_dienstgang_click, relief="flat",
-            font=("Arial", 11, "bold"), width=BTN_W, pady=10,
+            font=("Arial", 11, "bold"), pady=10,
         )
-        self.dienstgang_button.pack(side="left", padx=6)
+        self.dienstgang_button.pack(side="left", padx=6, expand=True, fill=tk.X)
 
         self.pause_button = tk.Button(self.btn_frame, text="Break",
                                       bg=Color.BTN_PAUSE_BG.value, fg=Color.BTN_PAUSE_FG.value,
                                       activebackground=Color.BTN_PAUSE_BG.value, activeforeground=Color.BTN_PAUSE_FG.value,
                                       command=self.handle_pause_click, relief="flat",
-                                      font=("Arial", 11, "bold"), width=BTN_W, pady=10)
-        self.pause_button.pack(side="left", padx=6)
+                                      font=("Arial", 11, "bold"), pady=10)
+        self.pause_button.pack(side="left", padx=6, expand=True, fill=tk.X)
 
         self.update_dienstgang_button_text()
 
@@ -701,8 +786,10 @@ class TrackMe:
         def _run():
             try:
                 nova.run_nova_action(action)
+                self._fire_notify("NovaTime ✅", "Novatime Call: Success ✅")
             except Exception as e:
                 print(f"[Nova Work] {action} failed: {e}")
+                self._fire_notify("NovaTime ❌", f"Novatime Call: Failed ❌\n{e}")
         threading.Thread(target=_run, daemon=True).start()
 
     def _nova_trip_async(self):
@@ -714,8 +801,10 @@ class TrackMe:
         def _run():
             try:
                 nova.run_nova_action(action)
+                self._fire_notify("NovaTime ✅", "Novatime Call: Success ✅")
             except Exception as e:
                 print(f"[Nova Trip] {action} failed: {e}")
+                self._fire_notify("NovaTime ❌", f"Novatime Call: Failed ❌\n{e}")
         threading.Thread(target=_run, daemon=True).start()
 
     def _nova_pause_async(self):
@@ -727,8 +816,10 @@ class TrackMe:
         def _run():
             try:
                 nova.run_nova_action(action)
+                self._fire_notify("NovaTime ✅", "Novatime Call: Success ✅")
             except Exception as e:
                 print(f"[Nova Pause] {action} failed: {e}")
+                self._fire_notify("NovaTime ❌", f"Novatime Call: Failed ❌\n{e}")
         threading.Thread(target=_run, daemon=True).start()
 
     def handle_dienstgang_click(self):
@@ -869,6 +960,7 @@ class TrackMe:
                 cfg_http_auth_username   = cfg.proxy_auth_username,
                 cfg_http_auth_password   = cfg.proxy_auth_password,
                 cfg_headless             = not cfg.show_window,
+                cfg_url_journal          = cfg.url_journal,
             )
             print("[Nova] init_config() called successfully")
         except Exception as e:
@@ -1009,70 +1101,51 @@ class TrackMe:
                 # Apply theme and redraw main window
                 _apply_theme(n)
                 _save_active_theme_name(n)
-                self._redraw_all_colors()
+
+                messagebox.showinfo(
+                    "Theme-Change", 
+                    f"The Theme was changed to '{n}'.\n\n"
+                    "The Application will now restart to apply the new theme."
+                )
+
+                self._restart_app()
 
             btn.config(command=_pick)
 
         tk.Frame(win, bg=BTN, height=1).pack(fill=tk.X, padx=24, pady=(14, 8))
-        tk.Label(win, text="Changes apply instantly.", bg=BG, fg=BTN,
+        tk.Label(win, text="Changes apply on restart", bg=BG, fg=BTN,
                  font=("Arial", 8)).pack(pady=(0, 14))
 
         win.protocol("WM_DELETE_WINDOW", win.destroy)
 
-    def _redraw_all_colors(self):
-        """Re-apply all current Color values to the main window widgets."""
-        BG  = Color.BACKGROUND.value
-        FG  = Color.FOREGROUND.value
-        BTN = Color.BUTTON.value
-        TXT = Color.TEXT.value
-        ACC = Color.ACCENT.value
+    def _restart_app(self):
+        """Startet die App neu – funktioniert als .py und als .exe."""
+        import subprocess
 
-        # ── Root + frames ─────────────────────────────────────────────────────
-        self.master.config(bg=BG)
-        self.main_frame.config(bg=FG)
-        self.info_frame.config(bg=BG)
-        self.btn_frame.config(bg=FG)
+        # reset tray icon
+        try:
+            if hasattr(self, 'stop_event'):
+                self.stop_event.set()
+            if hasattr(self, 'icon') and self.icon:
+                self.icon.stop()
+        except:
+            pass
 
-        # ── Header buttons ────────────────────────────────────────────────────
-        self.hdr_settings_btn.config(bg=Color.BTN_SETTINGS_BG.value, fg=Color.BTN_SETTINGS_FG.value,
-                                      activebackground=Color.BTN_SETTINGS_BG.value, activeforeground=Color.BTN_SETTINGS_FG.value)
-        self.hdr_api_btn.config(    bg=Color.BTN_API_BG.value,       fg=Color.BTN_API_FG.value,
-                                      activebackground=Color.BTN_API_BG.value, activeforeground=Color.BTN_API_FG.value)
-        self.hdr_overtime_btn.config(bg=Color.BTN_OVERTIME_BG.value, fg=Color.BTN_OVERTIME_FG.value,
-                                      activebackground=Color.BTN_OVERTIME_BG.value, activeforeground=Color.BTN_OVERTIME_FG.value)
-        self.hdr_bored_btn.config(  bg=Color.BTN_BORED_BG.value,     fg=Color.BTN_BORED_FG.value,
-                                      activebackground=Color.BTN_BORED_BG.value, activeforeground=Color.BTN_BORED_FG.value)
-        self.hdr_theme_btn.config(  bg=Color.BTN_THEME_BG.value,     fg=Color.BTN_THEME_FG.value,
-                                      activebackground=Color.BTN_THEME_BG.value, activeforeground=Color.BTN_THEME_FG.value)
+        # check if exe or python script
+        if getattr(sys, 'frozen', False):
+            executable = sys.executable
+            args = sys.argv[1:]
+        else:
+            executable = sys.executable
+            args = [sys.argv[0]] + sys.argv[1:]
 
-        # Parent frame of header buttons
-        for child in self.main_frame.winfo_children():
-            if child.winfo_class() == "Frame" and child not in (self.info_frame, self.btn_frame):
-                child.config(bg=FG)
-                break
+        # start new process
+        subprocess.Popen([executable] + args, shell=False)
+        
+        # stop current
+        self.master.destroy()
+        os._exit(0)
 
-        # ── Info labels & canvases ────────────────────────────────────────────
-        self.time_display.config(bg=BG, fg=TXT)
-        self.balance_account_label.config(bg=BG)
-        self.worked_label.config(bg=BG, fg=TXT)
-        self.work_hours_left.config(bg=BG, fg=TXT)
-        self.pause_info.config(bg=BG)
-        self.you_can_go_in.config(bg=BG, fg=ACC)
-        self.work_bar_canvas.config(bg=BG)
-        self.pause_bar_canvas.config(bg=BG)
-
-        # Separator lines inside info_frame
-        for child in self.info_frame.winfo_children():
-            try:
-                if child.winfo_class() == "Frame":
-                    child.config(bg=BTN)
-            except Exception:
-                pass
-
-        # ── Action buttons (state-aware) ──────────────────────────────────────
-        self.update_start_button()
-        self.update_pause_button_text()
-        self.update_dienstgang_button_text()
     # ── API Settings window ───────────────────────────────────────────────────
     def open_api_settings(self):
         win = self._make_popup("Nova Time API Settings")
@@ -1098,7 +1171,8 @@ class TrackMe:
                      width=36, **kw).pack(padx=24, anchor="w", ipady=4)
             return var
 
-        url_var   = field_row(win, "NovaTime URL",          self.nova_cfg.url)
+        url_var         = field_row(win, "NovaTime URL",              self.nova_cfg.url)
+        url_journal_var = field_row(win, "NovaTime User Journal URL", self.nova_cfg.url_journal)
         user_var  = field_row(win, "Username",              self.nova_cfg.username)
         pass_var  = field_row(win, "Password",              self.nova_cfg.password,  show="•")
         puser_var = field_row(win, "Proxy Auth Username",   self.nova_cfg.proxy_auth_username)
@@ -1123,6 +1197,7 @@ class TrackMe:
 
         def save_and_close():
             self.nova_cfg.url                 = url_var.get().strip()
+            self.nova_cfg.url_journal         = url_journal_var.get().strip()
             self.nova_cfg.username            = user_var.get().strip()
             self.nova_cfg.password            = pass_var.get()
             self.nova_cfg.proxy_auth_username = puser_var.get().strip()
@@ -1167,9 +1242,11 @@ class TrackMe:
                 try:
                     nova.run_nova_action("test")
                     win.after(0, lambda: _set_test_status(True,  "✓ Connection OK"))
+                    self._fire_notify("NovaTime ✅", "Novatime Call: Success ✅")
                 except Exception as e:
                     print(f"[API Test] Error: {e}")
-                    win.after(0, lambda: _set_test_status(False, f"✗ {e}"))
+                    win.after(0, lambda err=e: _set_test_status(False, f"✗ {err}"))
+                    self._fire_notify("NovaTime ❌", f"Novatime Call: Failed ❌\n{e}")
                 finally:
                     win.after(0, lambda: test_btn.config(
                         state="normal", text="🔌  Test API"))
@@ -1385,6 +1462,29 @@ class TrackMe:
         slider_row(extras_inner, "Break Required After (hours):",
                    brk_after_var, 1.0, 12.0, 0.5,
                    lambda v: f"{v:.1f} h", ACC)
+
+        # ── Disable Notifications toggle ──────────────────────────────────────
+        notif_var = tk.BooleanVar(value=self.tracker.notifications_disabled)
+
+        def _toggle_notif():
+            self.tracker.notifications_disabled = notif_var.get()
+            self.tracker.save_data()
+
+        notif_row = tk.Frame(extras_inner, bg=Color.BACKGROUND.value)
+        notif_row.pack(anchor="w", padx=26, pady=(10, 4))
+        tk.Checkbutton(
+            notif_row,
+            text="Disable Notifications",
+            variable=notif_var,
+            command=_toggle_notif,
+            bg=Color.BACKGROUND.value,
+            fg=Color.TEXT.value,
+            selectcolor=Color.BUTTON.value,
+            activebackground=Color.BACKGROUND.value,
+            activeforeground=Color.TEXT.value,
+            font=("Arial", 9),
+            bd=0,
+        ).pack(side="left")
 
         def hard_reset():
             if messagebox.askyesno("Hard Reset",
@@ -2007,10 +2107,10 @@ class TrackMe:
 
     # ── Main update loop ──────────────────────────────────────────────────────
     def __update(self):
-        # ── Row 1: Date + time ────────────────────────────────────────────────
+        # ── Date tile ─────────────────────────────────────────────────────────
         now_dt = datetime.now()
-        self.time_display.config(
-            text=now_dt.strftime("%a, %d.%m.%Y  %H:%M:%S"))
+        self.date_display.config(text=now_dt.strftime("%a, %d.%m.%Y"))
+        self.time_display.config(text=now_dt.strftime("%H:%M:%S"))
         self.update_start_button()
         self.update_pause_button_text()
         self.update_dienstgang_button_text()
@@ -2031,7 +2131,7 @@ class TrackMe:
             effective_goal_s = goal_secs - credit_secs
             work_left_secs   = effective_goal_s - work_elapsed
 
-            # ── Row 2: Balance — fetched Nova saldo, -1s each second ──────────
+            # ── Balance (date tile) ───────────────────────────────────────────
             if not self.tracker.is_in_pause:
                 if self._saldo_syncing:
                     self.balance_account_label.config(
@@ -2051,8 +2151,10 @@ class TrackMe:
                         fg=bal_color)
 
             def _draw_bar(canvas, progress, color, label=""):
+                canvas.update_idletasks()
+                bw = canvas.winfo_width() or self._bar_w
+                bh = self._bar_h
                 canvas.delete("all")
-                bw, bh = self._bar_w, self._bar_h
                 canvas.create_rectangle(0, 0, bw, bh, fill=Color.BAR_EMPTY.value, outline="")
                 fill_w = int(bw * min(1.0, progress))
                 if fill_w > 0:
@@ -2060,28 +2162,27 @@ class TrackMe:
                 canvas.create_text(bw // 2, bh // 2, text=label,
                                 fill=Color.BAR_TEXT.value, font=("Arial", 8, "bold"))
 
-            # Row 3: Worked label + work progress bar
+            # ── Worked tile ───────────────────────────────────────────────────
             g_h = int(self.tracker.daily_goal)
             g_m = round((self.tracker.daily_goal - g_h) * 60)
             we_h = int(work_elapsed) // 3600
             we_m = (int(work_elapsed) % 3600) // 60
             we_s = int(work_elapsed) % 60
             self.worked_label.config(
-                text=f"Worked:  {we_h:02d}:{we_m:02d}:{we_s:02d} / {g_h:02d}:{g_m:02d} h")
+                text=f"{we_h:02d}:{we_m:02d}:{we_s:02d}  /  {g_h:02d}:{g_m:02d} h")
 
-            work_progress = work_elapsed / effective_goal_s if effective_goal_s > 0 else 0
-            overtime = work_elapsed > effective_goal_s
+            work_progress  = work_elapsed / effective_goal_s if effective_goal_s > 0 else 0
+            overtime       = work_elapsed > effective_goal_s
             work_bar_color = Color.OVERTIME.value if overtime else Color.ACCENT.value
             _draw_bar(self.work_bar_canvas, work_progress, work_bar_color,
                       f"Work: {min(int(work_progress*100), 100)}%{'  ✓' if work_left_secs <= 0 else ''}")
 
-            # Row 4: Work Left / Goal Reached + pause progress bar
             if work_left_secs > 0:
                 wl_h = int(work_left_secs) // 3600
                 wl_m = (int(work_left_secs) % 3600) // 60
                 wl_s = int(work_left_secs) % 60
                 self.work_hours_left.config(
-                    text=f"Work Left:  {wl_h:02d}:{wl_m:02d}:{wl_s:02d}",
+                    text=f"Left:  {wl_h:02d}:{wl_m:02d}:{wl_s:02d}",
                     fg=Color.TEXT.value)
             else:
                 if not self._notified_work_done:
@@ -2091,39 +2192,79 @@ class TrackMe:
                 self.work_hours_left.config(
                     text="Goal Reached! ✅", fg=Color.OVERTIME.value)
 
+            # ── Core Hours tile ───────────────────────────────────────────────
+            clock_in_dt  = datetime.fromtimestamp(self.tracker.start_time_stamp)
+            clock_in_str = clock_in_dt.strftime("%H:%M")
+            effective_pause = max(required_pause_s, total_pause_done)
+            leave_ts        = self.tracker.start_time_stamp + effective_goal_s + effective_pause
+            leave_dt        = datetime.fromtimestamp(leave_ts)
+            leave_str       = leave_dt.strftime("%H:%M")
+
+            # Overtime at projected leave — compared against the raw daily goal
+            ot_at_leave = work_elapsed - goal_secs
+            ot_sign     = "+" if ot_at_leave >= 0 else "-"
+            ot_h        = int(abs(ot_at_leave)) // 3600
+            ot_m        = (int(abs(ot_at_leave)) % 3600) // 60
+
+            # Projected total balance: current nova saldo + today's OT contribution
+            if self._nova_saldo_snapshot is not None:
+                snap_saldo, snap_time = self._nova_saldo_snapshot
+                # Saldo ticks up while clocked in — take snapshot value at leave_ts
+                saldo_at_leave = snap_saldo + (leave_ts + credit_secs) - snap_time
+            else:
+                saldo_at_leave = None
+
+            self.core_clockin_label.config(
+                text=f"Clocked in at  {clock_in_str}")
+            self.core_arrow_label.config(
+                text=f"{clock_in_str}  →  {leave_str}")
+            self.core_sub_label.config(
+                text=f"Goal {g_h:02d}:{g_m:02d} h  ·  Leave at {leave_str}")
+
+            # ── Break tile ────────────────────────────────────────────────────
             pause_progress = total_pause_done / required_pause_s if required_pause_s > 0 else 1.0
             pause_ok       = total_pause_done >= required_pause_s
             pause_bar_col  = Color.OVERTIME.value if pause_ok else Color.PAUSE.value
             _draw_bar(self.pause_bar_canvas, pause_progress, pause_bar_col,
                       f"Break {min(int(pause_progress*100), 100)}%{'  ✓' if pause_ok else ''}")
 
+            p_done_h = int(total_pause_done) // 3600
+            p_done_m = (int(total_pause_done) % 3600) // 60
+            p_done_s = int(total_pause_done) % 60
+            p_req_h  = int(required_pause_s) // 3600
+            p_req_m  = (int(required_pause_s) % 3600) // 60
 
-            # ── Row 5: Target leave time ──────────────────────────────────────
-            effective_pause = max(required_pause_s, total_pause_done)
-            leave_ts  = self.tracker.start_time_stamp + effective_goal_s + effective_pause
-            self.you_can_go_in.config(
-                text=f"Leave at:  {datetime.fromtimestamp(leave_ts).strftime('%H:%M Uhr')}")
-
-            # ── Row 6: Pause info ─────────────────────────────────────────────
-            p_text = (f"Break: {self.format_seconds(total_pause_done)} / "
-                      f"{self.format_seconds(required_pause_s)}")
             if pause_left > 0:
-                p_text += f"  ({self.format_seconds(pause_left)} left)"
-                self.pause_info.config(fg=Color.PAUSE.value)
+                pl_h = int(pause_left) // 3600
+                pl_m = (int(pause_left) % 3600) // 60
+                pl_s = int(pause_left) % 60
+                self.pause_info.config(
+                    text=f"{p_done_h:02d}:{p_done_m:02d}:{p_done_s:02d}  /  "
+                         f"{p_req_h:02d}:{p_req_m:02d} h",
+                    fg=Color.PAUSE.value)
+                self.break_deadline_label.config(
+                    text=f"⏳ {pl_h:02d}:{pl_m:02d}:{pl_s:02d} left")
                 self._notified_pause_done = False
             else:
-                p_text += "  (OK)"
-                self.pause_info.config(fg=Color.OVERTIME.value)
+                self.pause_info.config(
+                    text=f"{p_done_h:02d}:{p_done_m:02d}:{p_done_s:02d}  /  "
+                         f"{p_req_h:02d}:{p_req_m:02d} h  ✓",
+                    fg=Color.OVERTIME.value)
+                self.break_deadline_label.config(text="Break complete ✅")
                 if self.tracker.is_in_pause and not self._notified_pause_done:
                     self._notified_pause_done = True
                     self._fire_notify("☕ Break complete",
                                       "Required break done – you can get back to work!")
-            self.pause_info.config(text=p_text)
 
-            # ── Pause warnings ────────────────────────────────────────────────
+            # Break-warning deadline (e.g. "Break by 13:30")
             six_hours_s   = self.tracker.break_required_after_hours * 3600
             warn_before_s = self.tracker.pause_warn_before_mins * 60
+            deadline_ts   = self.tracker.start_time_stamp + six_hours_s + total_pause_done
+            deadline_str  = datetime.fromtimestamp(deadline_ts).strftime("%H:%M")
             until_6h      = six_hours_s - work_elapsed
+            if total_pause_done == 0 and until_6h > 0:
+                self.break_deadline_label.config(
+                    text=f"⏰ Break by  {deadline_str}")
             if (0 <= until_6h <= warn_before_s) and not self._notified_pause_warn and total_pause_done == 0:
                 self._notified_pause_warn = True
                 mins_left = max(1, int(math.ceil(until_6h / 60)))
@@ -2133,6 +2274,28 @@ class TrackMe:
                     f"You need a break!")
             if work_elapsed < six_hours_s - warn_before_s:
                 self._notified_pause_warn = False
+
+            # ── Leave tile ────────────────────────────────────────────────────
+            self.you_can_go_in.config(
+                text=f"Leave at  {leave_str}")
+
+            ot_color = Color.OVERTIME.value if ot_at_leave >= 0 else Color.NEGATIVE.value
+            self.leave_overtime_label.config(
+                text=f"Today:  {ot_sign}{ot_h:02d}:{ot_m:02d} h",
+                fg=ot_color)
+
+            if saldo_at_leave is not None:
+                sal_sign  = "+" if saldo_at_leave >= 0 else "-"
+                sal_h     = int(abs(saldo_at_leave)) // 3600
+                sal_m     = (int(abs(saldo_at_leave)) % 3600) // 60
+                sal_color = Color.OVERTIME.value if saldo_at_leave >= 0 else Color.NEGATIVE.value
+                self.leave_sub_label.config(
+                    text=f"Balance at leave:  {sal_sign}{sal_h:02d}:{sal_m:02d} h",
+                    fg=sal_color)
+            else:
+                self.leave_sub_label.config(
+                    text=f"Clocked in  {clock_in_str}  ·  Goal {g_h:02d}:{g_m:02d} h",
+                    fg=Color.BUTTON.value)
 
         else:
             # No active session
@@ -2144,43 +2307,261 @@ class TrackMe:
                 bal_color = Color.OVERTIME.value if bal >= 0 else Color.NEGATIVE.value
                 self.balance_account_label.config(
                     text=f"Balance:  {self.format_seconds(bal)}", fg=bal_color)
-            self.worked_label.config(text="")
+            self.worked_label.config(text="—")
             self.work_hours_left.config(text="")
-            self.you_can_go_in.config(text="")
-            self.pause_info.config(text="")
+            self.you_can_go_in.config(text="—")
+            self.leave_overtime_label.config(text="")
+            self.leave_sub_label.config(text="")
+            self.pause_info.config(text="—")
+            self.break_deadline_label.config(text="")
+            self.core_clockin_label.config(text="Not clocked in")
+            self.core_arrow_label.config(text="—")
+            self.core_sub_label.config(text="")
             self.work_bar_canvas.delete("all")
             self.pause_bar_canvas.delete("all")
 
         self.master.after(1000, self.__update)
 
-    def _launch_game(self):
-        """Launch a game exe located in the same directory as this script."""
-        try:
-            # Use resolve() to get the absolute path
-            script_dir = Path(__file__).resolve().parent
-            # Find all .exe files
-            # Optimization: Filter out 'python.exe' or the script's own name if compiled
-            current_file = Path(__file__).name
-            exes = [
-                f for f in script_dir.glob("*.exe") 
-                if f.name.lower() != current_file.lower()
-            ]
-            exes.sort()
+    def open_journal(self):
+        """Fetch and display the journal in a scrollable table window."""
+        if not NOVA_AVAILABLE or not self.nova_cfg.url_journal:
+            messagebox.showwarning("Journal", "Nova API is not configured.\nPlease set up the API settings first.")
+            return
 
-            if not exes:
-                messagebox.showinfo("Bored?", f"No executable found in:\n{script_dir}")
-                return
+        # ── Create the journal window ─────────────────────────────────────────
+        win = tk.Toplevel(self.master)
+        win.title("📋 User Journel")
+        win.config(bg=Color.BACKGROUND.value)
+        win.resizable(True, True)
+        win.withdraw()
+        if os.path.exists(self.icon_ico):
+            try: win.iconbitmap(self.icon_ico)
+            except Exception: pass
 
-            target_exe = exes[0]
-            # Use Popen with creationflags to decouple the process 
-            # (prevents the game from closing if the script is closed)
-            subprocess.Popen(
-                [str(target_exe)],
-                cwd=str(script_dir),
-                creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
-            )
-        except Exception as e:
-            messagebox.showerror("Launch failed", f"Error: {str(e)}")
+        BG  = Color.BACKGROUND.value
+        FG  = Color.FOREGROUND.value
+        TXT = Color.TEXT.value
+        ACC = Color.ACCENT.value
+
+        # ── Header bar ────────────────────────────────────────────────────────
+        hdr_frame = tk.Frame(win, bg=FG, pady=8)
+        hdr_frame.pack(fill=tk.X, padx=10, pady=(10, 0))
+
+        self._journal_title_lbl = tk.Label(
+            hdr_frame, text="Loading journal…", bg=FG, fg=ACC,
+            font=("Arial", 13, "bold"))
+        self._journal_title_lbl.pack(side="left", padx=12)
+
+        refresh_btn = tk.Button(
+            hdr_frame, text="🔄 Refresh",
+            bg=Color.BTN_API_BG.value, fg=Color.BTN_API_FG.value,
+            activebackground=Color.BTN_API_BG.value, activeforeground=Color.BTN_API_FG.value,
+            font=("Arial", 10), bd=0, padx=10, relief="flat")
+        refresh_btn.pack(side="right", padx=8)
+
+        # ── Scrollable table area ─────────────────────────────────────────────
+        table_outer = tk.Frame(win, bg=BG)
+        table_outer.pack(fill=tk.BOTH, expand=True, padx=10, pady=8)
+
+        # Canvas + scrollbars for the table
+        h_scroll = tk.Scrollbar(table_outer, orient=tk.HORIZONTAL)
+        v_scroll = tk.Scrollbar(table_outer, orient=tk.VERTICAL)
+        h_scroll.pack(side=tk.BOTTOM, fill=tk.X)
+        v_scroll.pack(side=tk.RIGHT,  fill=tk.Y)
+
+        canvas = tk.Canvas(table_outer, bg=BG,
+                           xscrollcommand=h_scroll.set,
+                           yscrollcommand=v_scroll.set,
+                           highlightthickness=0)
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        h_scroll.config(command=canvas.xview)
+        v_scroll.config(command=canvas.yview)
+
+        # Inner frame that holds the actual grid of labels
+        self._journal_inner = tk.Frame(canvas, bg=BG)
+        canvas_window = canvas.create_window((0, 0), window=self._journal_inner, anchor="nw")
+
+        def _on_inner_configure(event):
+            canvas.configure(scrollregion=canvas.bbox("all"))
+
+        def _on_canvas_configure(event):
+            canvas.itemconfig(canvas_window, width=event.width)
+
+        self._journal_inner.bind("<Configure>", _on_inner_configure)
+        canvas.bind("<Configure>", _on_canvas_configure)
+
+        # Mouse-wheel scrolling
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+        canvas.bind_all("<MouseWheel>", _on_mousewheel)
+        win.bind("<Destroy>", lambda e: canvas.unbind_all("<MouseWheel>"))
+
+        # ── Status label shown while loading ─────────────────────────────────
+        self._journal_status_lbl = tk.Label(
+            self._journal_inner, text="⏳ Fetching journal…",
+            bg=BG, fg=ACC, font=("Arial", 12))
+        self._journal_status_lbl.grid(row=0, column=0, padx=20, pady=20)
+
+        # ── Columns to display ────────────────────────────────────────────────
+        SHOW_COLS = [
+            "Wt", "Datum", "Uhr von", "Zeit bis", "Bu art",
+            "Ist Std", "Soll Std", "Pause",
+            "Tages Saldo", "Gesamt Saldo",
+            "Kommentar", "Bemerkungstext",
+        ]
+
+        def _render_table(result: dict):
+            """Called from the main thread once the journal data arrives."""
+            meta    = result.get("meta",    {})
+            header  = result.get("header",  [])
+            rows    = result.get("rows",    [])
+            summary = result.get("summary", [])
+
+            # Update title label
+            name   = meta.get("name",  "")
+            persnr = meta.get("persnr","")
+            month  = meta.get("month", "")
+            title_text = f"{name}  │  PersNr {persnr}  │  {month}  │  {len(rows)} Zeilen"
+            self._journal_title_lbl.config(text=title_text)
+
+            # Pick columns
+            cols = [c for c in SHOW_COLS if c in header]
+            if not cols:
+                cols = header
+
+            # Clear inner frame
+            for widget in self._journal_inner.winfo_children():
+                widget.destroy()
+
+            # ── Column header row ─────────────────────────────────────────────
+            HDR_BG  = Color.FOREGROUND.value
+            HDR_FG  = Color.ACCENT.value
+            ROW_BG  = Color.BACKGROUND.value
+            ALT_BG  = Color.FOREGROUND.value
+            ROW_FG  = Color.TEXT.value
+            SEP_COL = Color.BUTTON.value
+
+            for c_idx, col in enumerate(cols):
+                lbl = tk.Label(
+                    self._journal_inner, text=col,
+                    bg=HDR_BG, fg=HDR_FG, font=("Arial", 9, "bold"),
+                    padx=8, pady=5, anchor="w",
+                    relief="flat", bd=0)
+                lbl.grid(row=0, column=c_idx, sticky="nsew", padx=(0, 1), pady=(0, 1))
+
+            # ── Data rows ─────────────────────────────────────────────────────
+            row_num = 1
+            for row in rows:
+                # Skip completely empty rows
+                if not any(str(row.get(c, "")).strip() for c in cols):
+                    continue
+
+                bg = ALT_BG if row_num % 2 == 0 else ROW_BG
+
+                # Highlight today
+                datum = row.get("Datum", "").strip()
+                today_str = datetime.now().strftime("%d.%m.%Y")
+                if datum == today_str:
+                    bg = "#1a3a1a" if "Dark" in _load_active_theme_name() else "#2a4a2a"
+
+                for c_idx, col in enumerate(cols):
+                    val = str(row.get(col, "")).strip()
+
+                    # Colour Tages Saldo / Gesamt Saldo values
+                    fg = ROW_FG
+                    if col in ("Tages Saldo", "Gesamt Saldo") and val:
+                        try:
+                            numeric = float(val.replace(",", ".").replace("+", ""))
+                            fg = Color.OVERTIME.value if numeric >= 0 else Color.NEGATIVE.value
+                        except ValueError:
+                            pass
+
+                    lbl = tk.Label(
+                        self._journal_inner, text=val,
+                        bg=bg, fg=fg, font=("Arial", 9),
+                        padx=8, pady=4, anchor="w",
+                        relief="flat", bd=0)
+                    lbl.grid(row=row_num, column=c_idx, sticky="nsew", padx=(0, 1), pady=(0, 1))
+
+                row_num += 1
+
+            # ── Summary rows ──────────────────────────────────────────────────
+            if summary:
+                # Separator
+                sep = tk.Frame(self._journal_inner, bg=Color.ACCENT.value, height=2)
+                sep.grid(row=row_num, column=0, columnspan=len(cols),
+                         sticky="ew", pady=(6, 2))
+                row_num += 1
+
+                for s in summary:
+                    # Render summary as a single merged label spanning all columns
+                    text = "   │   ".join(f"{k}: {v}" for k, v in s.items() if str(v).strip())
+                    lbl = tk.Label(
+                        self._journal_inner, text=text,
+                        bg=Color.FOREGROUND.value, fg=Color.ACCENT.value,
+                        font=("Arial", 9, "bold"),
+                        padx=8, pady=4, anchor="w",
+                        relief="flat", bd=0)
+                    lbl.grid(row=row_num, column=0, columnspan=len(cols),
+                             sticky="ew", padx=(0, 1), pady=(0, 1))
+                    row_num += 1
+
+            # Make all columns expand equally
+            for c_idx in range(len(cols)):
+                self._journal_inner.columnconfigure(c_idx, weight=1)
+
+        def _fetch_and_render():
+            """Background thread: fetch journal, then schedule render on main thread."""
+            try:
+                result = nova.run_nova_action("journal")
+                win.after(0, lambda: _render_table(result))
+            except Exception as e:
+                err_msg = str(e)
+                def _show_error():
+                    for w in self._journal_inner.winfo_children():
+                        w.destroy()
+                    tk.Label(
+                        self._journal_inner,
+                        text=f"❌ Error fetching journal:\n{err_msg}",
+                        bg=Color.BACKGROUND.value, fg=Color.NEGATIVE.value,
+                        font=("Arial", 11), padx=20, pady=20, justify="left"
+                    ).grid(row=0, column=0)
+                    self._journal_title_lbl.config(text="Journal — fetch failed")
+                win.after(0, _show_error)
+
+        def _do_refresh():
+            # Clear table and show loading state again
+            for w in self._journal_inner.winfo_children():
+                w.destroy()
+            self._journal_status_lbl = tk.Label(
+                self._journal_inner, text="⏳ Fetching journal…",
+                bg=Color.BACKGROUND.value, fg=Color.ACCENT.value,
+                font=("Arial", 12))
+            self._journal_status_lbl.grid(row=0, column=0, padx=20, pady=20)
+            self._journal_title_lbl.config(text="Loading journal…")
+            threading.Thread(target=_fetch_and_render, daemon=True).start()
+
+        refresh_btn.config(command=_do_refresh)
+
+        # ── Size & position ───────────────────────────────────────────────────
+        win.geometry("1000x540")
+        self.master.update_idletasks()
+        mx  = self.master.winfo_x()
+        my  = self.master.winfo_y()
+        mw  = self.master.winfo_width()
+        mh  = self.master.winfo_height()
+        x   = mx + (mw - 1000) // 2
+        y   = my - 560
+        scr_h = self.master.winfo_screenheight()
+        scr_w = self.master.winfo_screenwidth()
+        x = max(0, min(x, scr_w - 1000 - 8))
+        y = max(0, min(y, scr_h - 540 - 8))
+        win.geometry(f"1000x540+{x}+{y}")
+        win.deiconify()
+
+        # ── Start fetching ────────────────────────────────────────────────────
+        threading.Thread(target=_fetch_and_render, daemon=True).start()
 
     def on_closing(self):
         self.tracker.save_data()
