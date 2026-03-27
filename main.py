@@ -1,14 +1,17 @@
 import tkinter as tk
 from tkinter import messagebox
 import time
-import json
 import os
 import threading
 from pathlib import Path
 import math
 from datetime import datetime, timedelta
-from enum import Enum
 import sys
+
+# ── Utils integration ─────────────────────────────────────────────────────────
+from Utils import Data
+from Utils.Themes import THEMES, Color
+from Utils.TimeUtils import fmt_hhmmss, fmt_hhmm, fmt_hhmm_nova, seconds_to_hms, parse_nova_saldo
 
 # ── NovaTime integration ──────────────────────────────────────────────────────
 from NovaTime import nova as nova
@@ -22,162 +25,6 @@ from plyer import notification as plyer_notify
 NOVA_AVAILABLE = True
 TRAY_AVAILABLE = True
 NOTIFY_AVAILABLE = True
-
-# ── Themes (palette definitions) ─────────────────────────────────────────────
-THEMES = {
-    "Dark Mode": {
-        "BACKGROUND":       "#1f1d1d",
-        "FOREGROUND":       "#333131",
-        "BUTTON":           "#555252",
-        "TEXT":             "#ffffff",
-        "PAUSE":            "#ff9800",
-        "OVERTIME":         "#4caf50",
-        "NEGATIVE":         "#f44336",
-        "STOP":             "#9c1515",
-        "ACCENT":           "#5b9bd5",
-        "API":              "#2e86ab",
-        "TEST":             "#9c1515",
-        "BAR_EMPTY":        "#2a2a3e",
-        "BAR_TEXT":         "#ffffff",
-        "BTN_OVERTIME_BG":  "#5b9bd5",
-        "BTN_OVERTIME_FG":  "#ffffff",
-        "BTN_BORED_BG":     "#e6b800",
-        "BTN_BORED_FG":     "#1a1a1a",
-        "BTN_THEME_BG":     "#555252",
-        "BTN_THEME_FG":     "#ffffff",
-        "BTN_API_BG":       "#2e86ab",
-        "BTN_API_FG":       "#ffffff",
-        "BTN_SETTINGS_BG":  "#555252",
-        "BTN_SETTINGS_FG":  "#ffffff",
-        "BTN_CLOCKIN_BG":   "#555252",
-        "BTN_CLOCKIN_FG":   "#ffffff",
-        "BTN_CLOCKOUT_BG":  "#9c1515",
-        "BTN_CLOCKOUT_FG":  "#ffffff",
-        "BTN_PAUSE_BG":     "#ff9800",
-        "BTN_PAUSE_FG":     "#ffffff",
-        "BTN_ENDPAUSE_BG":  "#f44336",
-        "BTN_ENDPAUSE_FG":  "#ffffff",
-        "BTN_TRIP_BG":      "#0b7236",
-        "BTN_TRIP_FG":      "#ffffff",
-        "BTN_ENDTRIP_BG":   "#f44336",
-        "BTN_ENDTRIP_FG":   "#ffffff",
-    },
-    "Dracula": {
-        "BACKGROUND":       "#282a36",
-        "FOREGROUND":       "#383a4a",
-        "BUTTON":           "#44475a",
-        "TEXT":             "#f8f8f2",
-        "PAUSE":            "#ffb86c",
-        "OVERTIME":         "#50fa7b",
-        "NEGATIVE":         "#ff5555",
-        "STOP":             "#ff5555",
-        "ACCENT":           "#bd93f9",
-        "API":              "#8be9fd",
-        "TEST":             "#ff5555",
-        "BAR_EMPTY":        "#21222c",
-        "BAR_TEXT":         "#f8f8f2",
-        "BTN_OVERTIME_BG":  "#bd93f9",
-        "BTN_OVERTIME_FG":  "#282a36",
-        "BTN_BORED_BG":     "#f1fa8c",
-        "BTN_BORED_FG":     "#282a36",
-        "BTN_THEME_BG":     "#44475a",
-        "BTN_THEME_FG":     "#f8f8f2",
-        "BTN_API_BG":       "#8be9fd",
-        "BTN_API_FG":       "#282a36",
-        "BTN_SETTINGS_BG":  "#44475a",
-        "BTN_SETTINGS_FG":  "#f8f8f2",
-        "BTN_CLOCKIN_BG":   "#44475a",
-        "BTN_CLOCKIN_FG":   "#f8f8f2",
-        "BTN_CLOCKOUT_BG":  "#ff5555",
-        "BTN_CLOCKOUT_FG":  "#f8f8f2",
-        "BTN_PAUSE_BG":     "#ffb86c",
-        "BTN_PAUSE_FG":     "#f8f8f2",
-        "BTN_ENDPAUSE_BG":  "#ff5555",
-        "BTN_ENDPAUSE_FG":  "#282a36",
-        "BTN_TRIP_BG":      "#50fa7b",
-        "BTN_TRIP_FG":      "#282a36",
-        "BTN_ENDTRIP_BG":   "#ff5555",
-        "BTN_ENDTRIP_FG":   "#f8f8f2",
-    },
-    "Blue Theme": {
-        "BACKGROUND":       "#0d1b2a",
-        "FOREGROUND":       "#1b2d45",
-        "BUTTON":           "#1e3a5f",
-        "TEXT":             "#e0f0ff",
-        "PAUSE":            "#f4a261",
-        "OVERTIME":         "#52b788",
-        "NEGATIVE":         "#e63946",
-        "STOP":             "#c1121f",
-        "ACCENT":           "#48cae4",
-        "API":              "#0096c7",
-        "TEST":             "#c1121f",
-        "BAR_EMPTY":        "#0a1628",
-        "BAR_TEXT":         "#e0f0ff",
-        "BTN_OVERTIME_BG":  "#48cae4",
-        "BTN_OVERTIME_FG":  "#0d1b2a",
-        "BTN_BORED_BG":     "#f4a261",
-        "BTN_BORED_FG":     "#0d1b2a",
-        "BTN_THEME_BG":     "#1e3a5f",
-        "BTN_THEME_FG":     "#e0f0ff",
-        "BTN_API_BG":       "#0096c7",
-        "BTN_API_FG":       "#e0f0ff",
-        "BTN_SETTINGS_BG":  "#1e3a5f",
-        "BTN_SETTINGS_FG":  "#e0f0ff",
-        "BTN_CLOCKIN_BG":   "#1e3a5f",
-        "BTN_CLOCKIN_FG":   "#e0f0ff",
-        "BTN_CLOCKOUT_BG":  "#c1121f",
-        "BTN_CLOCKOUT_FG":  "#e0f0ff",
-        "BTN_PAUSE_BG":     "#f4a261",
-        "BTN_PAUSE_FG":     "#e0f0ff",
-        "BTN_ENDPAUSE_BG":  "#e63946",
-        "BTN_ENDPAUSE_FG":  "#0d1b2a",
-        "BTN_TRIP_BG":      "#2dc653",
-        "BTN_TRIP_FG":      "#0d1b2a",
-        "BTN_ENDTRIP_BG":   "#e63946",
-        "BTN_ENDTRIP_FG":   "#e0f0ff",
-    },
-}
-
-# ── Colours ───────────────────────────────────────────────────────────────────
-class Color(Enum):
-    TEST            = "#9c1515"
-    BACKGROUND      = "#1f1d1d"
-    FOREGROUND      = "#333131"
-    BUTTON          = "#555252"
-    TEXT            = "#ffffff"
-    PAUSE           = "#ff9800"
-    OVERTIME        = "#4caf50"
-    NEGATIVE        = "#f44336"
-    STOP            = "#9c1515"
-    ACCENT          = "#5b9bd5"
-    API             = "#2e86ab"
-    # Progress bars
-    BAR_EMPTY       = "#2a2a3e"
-    BAR_TEXT        = "#ffffff"
-    # Header buttons
-    BTN_OVERTIME_BG = "#5b9bd5"
-    BTN_OVERTIME_FG = "#200202"
-    BTN_BORED_BG    = "#e6b800"
-    BTN_BORED_FG    = "#1a1a1a"
-    BTN_THEME_BG    = "#555252"
-    BTN_THEME_FG    = "#ffffff"
-    BTN_API_BG      = "#2e86ab"
-    BTN_API_FG      = "#200202"
-    BTN_SETTINGS_BG = "#555252"
-    BTN_SETTINGS_FG = "#ffffff"
-    # Main action buttons
-    BTN_CLOCKIN_BG  = "#535552"
-    BTN_CLOCKIN_FG  = "#ffffff"
-    BTN_CLOCKOUT_BG = "#9c1515"
-    BTN_CLOCKOUT_FG = "#ffffff"
-    BTN_PAUSE_BG    = "#ff9800"
-    BTN_PAUSE_FG    = "#ffffff"
-    BTN_ENDPAUSE_BG = "#f44336"
-    BTN_ENDPAUSE_FG = "#ffffff"
-    BTN_TRIP_BG     = "#0b7236"
-    BTN_TRIP_FG     = "#ffffff"
-    BTN_ENDTRIP_BG  = "#f44336"
-    BTN_ENDTRIP_FG  = "#ffffff"
 
 # ── Base directory & save folder ─────────────────────────────────────────────
 # Works correctly both as a plain .py script and when bundled with
@@ -198,9 +45,8 @@ def _get_save_dir() -> Path:
 def _load_active_theme_name() -> str:
     try:
         path = _get_save_dir() / "theme.json"
-        if path.exists():
-            with open(path) as f:
-                return json.load(f).get("theme", "Dark Mode")
+        theme = Data.load_data(path)
+        return theme.get("theme", "Dark Mode")
     except Exception:
         pass
     return "Dark Mode"
@@ -208,8 +54,7 @@ def _load_active_theme_name() -> str:
 def _save_active_theme_name(name: str):
     try:
         path = _get_save_dir() / "theme.json"
-        with open(path, "w") as f:
-            json.dump({"theme": name}, f)
+        Data.save_data(path, {"theme": name})
     except Exception as e:
         print(f"[Theme] Save error: {e}")
 
@@ -222,7 +67,7 @@ def _apply_theme(name: str):
 
 # ── NovaTime API config (separate file) ───────────────────────────────────────
 class NovaConfig:
-    """Loads and saves NovaTime API settings to nova_config.json."""
+    """Loads and saves NovaTime API settings to nova_config.json./ nova_config.lock"""
 
     DEFAULTS = {
         "url":                "",
@@ -240,20 +85,20 @@ class NovaConfig:
         self.load()
 
     def load(self):
-        if os.path.exists(self.file_path):
-            try:
-                with open(self.file_path, "r") as f:
-                    saved = json.load(f)
+        try:
+            saved = Data.load_data(self.file_path, key=True)
+            if saved:
                 # Merge saved values over defaults so new keys always exist
                 for k, v in self.DEFAULTS.items():
                     self.data[k] = saved.get(k, v)
-            except Exception as e:
-                print(f"[NovaConfig] Load error: {e}")
+            else:
+                print(f"[NovaConfig] No Config file found!")
+        except Exception as e:
+            print(f"[NovaConfig] Load error: {e}")
 
     def save(self):
         try:
-            with open(self.file_path, "w") as f:
-                json.dump(self.data, f, indent=4)
+            Data.save_data(self.file_path, self.data, key=True)
         except Exception as e:
             print(f"[NovaConfig] Save error: {e}")
 
@@ -351,14 +196,13 @@ class Tracker:
             "break_required_after_hours": self.break_required_after_hours,
             "notifications_disabled":     self.notifications_disabled,
         }
-        with open(self.file_path, "w") as f:
-            json.dump(data, f, indent=4)
+
+        Data.save_data(self.file_path, data)
 
     def load_data(self):
         if os.path.exists(self.file_path):
             try:
-                with open(self.file_path, "r") as f:
-                    d = json.load(f)
+                d = Data.load_data(self.file_path)
                 self.start_time_stamp       = d.get("start_time_stamp", 0)
                 self.is_in_pause            = d.get("is_in_pause", False)
                 self.pauses                 = d.get("pauses", [])
@@ -967,37 +811,7 @@ class TrackMe:
             print(f"[Nova] init_config() failed: {e}")
 
     def _parse_nova_saldo(self, raw: str) -> float | None:
-        """
-        Parse a NovaTime saldo string into seconds.
-        Handles both hour format  ("Saldo:  -4,57 Std")
-        and minute format         ("Saldo:  -274 Min").
-        Returns seconds as float, or None if unparseable.
-        """
-        import re
-        # Minutes format:  "Saldo: -274 Min"  or "Saldo: 30 Min"
-        m = re.search(r"Saldo:\s*([-+]?\d+[,.]?\d*)\s*Min", raw, re.IGNORECASE)
-        if m:
-            mins = float(m.group(1).replace(",", "."))
-            return mins * 60
-
-        # Hours format:  "Saldo:  -4,57 Std"  or "Saldo: 1.25 Std"
-        # NovaTime uses HH,MM notation (comma = colon), NOT decimal hours.
-        # e.g. "-4,57 Std" means -4h 57min, not -4.57h.
-        m = re.search(r"Saldo:\s*([-+]?)(\d+)[,.](\d+)\s*Std", raw, re.IGNORECASE)
-        if m:
-            sign    = -1 if m.group(1) == "-" else 1
-            hours   = int(m.group(2))
-            minutes = int(m.group(3))
-            return sign * (hours * 3600 + minutes * 60)
-
-        # Fallback: bare number after "Saldo:" — assume hours
-        m = re.search(r"Saldo:\s*([-+]?\d+[,.]?\d*)", raw)
-        if m:
-            val = float(m.group(1).replace(",", "."))
-            print(f"[Nova Saldo] No unit found, assuming hours: {val}")
-            return val * 3600
-
-        return None
+        return parse_nova_saldo(raw)
 
     def _sync_saldo_from_nova(self, delay_ms=0):
         """
@@ -2093,17 +1907,10 @@ class TrackMe:
         win.protocol("WM_DELETE_WINDOW", _on_close)
 
     def format_seconds(self, seconds):
-        neg = seconds < 0
-        s   = abs(int(seconds))
-        return f"{'-' if neg else ''}{s//3600:02d}:{(s%3600)//60:02d}:{s%60:02d}"
+        return fmt_hhmmss(seconds)
 
     def format_seconds_as_hhmm(self, seconds):
-        """Format seconds as ±HH,MM (NovaTime-style) for the bracket hint."""
-        neg = seconds < 0
-        s   = abs(int(seconds))
-        h   = s // 3600
-        m   = (s % 3600) // 60
-        return f"{'-' if neg else '+'}{h},{m:02d}"
+        return fmt_hhmm_nova(seconds)
 
     # ── Main update loop ──────────────────────────────────────────────────────
     def __update(self):
@@ -2163,11 +1970,8 @@ class TrackMe:
                                 fill=Color.BAR_TEXT.value, font=("Arial", 8, "bold"))
 
             # ── Worked tile ───────────────────────────────────────────────────
-            g_h = int(self.tracker.daily_goal)
-            g_m = round((self.tracker.daily_goal - g_h) * 60)
-            we_h = int(work_elapsed) // 3600
-            we_m = (int(work_elapsed) % 3600) // 60
-            we_s = int(work_elapsed) % 60
+            g_h, g_m, _ = seconds_to_hms(self.tracker.daily_goal * 3600)
+            we_h, we_m, we_s = seconds_to_hms(work_elapsed)
             self.worked_label.config(
                 text=f"{we_h:02d}:{we_m:02d}:{we_s:02d}  /  {g_h:02d}:{g_m:02d} h")
 
@@ -2178,9 +1982,7 @@ class TrackMe:
                       f"Work: {min(int(work_progress*100), 100)}%{'  ✓' if work_left_secs <= 0 else ''}")
 
             if work_left_secs > 0:
-                wl_h = int(work_left_secs) // 3600
-                wl_m = (int(work_left_secs) % 3600) // 60
-                wl_s = int(work_left_secs) % 60
+                wl_h, wl_m, wl_s = seconds_to_hms(work_left_secs)
                 self.work_hours_left.config(
                     text=f"Left:  {wl_h:02d}:{wl_m:02d}:{wl_s:02d}",
                     fg=Color.TEXT.value)
@@ -2197,20 +1999,17 @@ class TrackMe:
             clock_in_str = clock_in_dt.strftime("%H:%M")
             effective_pause = max(required_pause_s, total_pause_done)
             leave_ts        = self.tracker.start_time_stamp + effective_goal_s + effective_pause
-            leave_dt        = datetime.fromtimestamp(leave_ts)
-            leave_str       = leave_dt.strftime("%H:%M")
+            leave_str       = datetime.fromtimestamp(leave_ts).strftime("%H:%M")
 
-            # Overtime at projected leave — compared against the raw daily goal
+            # Overtime now vs raw daily goal
             ot_at_leave = work_elapsed - goal_secs
             ot_sign     = "+" if ot_at_leave >= 0 else "-"
-            ot_h        = int(abs(ot_at_leave)) // 3600
-            ot_m        = (int(abs(ot_at_leave)) % 3600) // 60
+            ot_h, ot_m, _ = seconds_to_hms(ot_at_leave)
 
-            # Projected total balance: current nova saldo + today's OT contribution
+            # Projected total balance at leave time
             if self._nova_saldo_snapshot is not None:
                 snap_saldo, snap_time = self._nova_saldo_snapshot
-                # Saldo ticks up while clocked in — take snapshot value at leave_ts
-                saldo_at_leave = snap_saldo + (leave_ts + credit_secs) - snap_time
+                saldo_at_leave = snap_saldo + (leave_ts - effective_pause + credit_secs) - snap_time
             else:
                 saldo_at_leave = None
 
@@ -2228,16 +2027,11 @@ class TrackMe:
             _draw_bar(self.pause_bar_canvas, pause_progress, pause_bar_col,
                       f"Break {min(int(pause_progress*100), 100)}%{'  ✓' if pause_ok else ''}")
 
-            p_done_h = int(total_pause_done) // 3600
-            p_done_m = (int(total_pause_done) % 3600) // 60
-            p_done_s = int(total_pause_done) % 60
-            p_req_h  = int(required_pause_s) // 3600
-            p_req_m  = (int(required_pause_s) % 3600) // 60
+            p_done_h, p_done_m, p_done_s = seconds_to_hms(total_pause_done)
+            p_req_h,  p_req_m,  _        = seconds_to_hms(required_pause_s)
 
             if pause_left > 0:
-                pl_h = int(pause_left) // 3600
-                pl_m = (int(pause_left) % 3600) // 60
-                pl_s = int(pause_left) % 60
+                pl_h, pl_m, pl_s = seconds_to_hms(pause_left)
                 self.pause_info.config(
                     text=f"{p_done_h:02d}:{p_done_m:02d}:{p_done_s:02d}  /  "
                          f"{p_req_h:02d}:{p_req_m:02d} h",
@@ -2257,27 +2051,26 @@ class TrackMe:
                                       "Required break done – you can get back to work!")
 
             # Break-warning deadline (e.g. "Break by 13:30")
-            six_hours_s   = self.tracker.break_required_after_hours * 3600
-            warn_before_s = self.tracker.pause_warn_before_mins * 60
-            deadline_ts   = self.tracker.start_time_stamp + six_hours_s + total_pause_done
-            deadline_str  = datetime.fromtimestamp(deadline_ts).strftime("%H:%M")
-            until_6h      = six_hours_s - work_elapsed
-            if total_pause_done == 0 and until_6h > 0:
+            pause_warn_after_hours_s      = self.tracker.break_required_after_hours * 3600
+            warn_before_s                 = self.tracker.pause_warn_before_mins * 60
+            deadline_ts                   = self.tracker.start_time_stamp + pause_warn_after_hours_s + total_pause_done
+            deadline_str                  = datetime.fromtimestamp(deadline_ts).strftime("%H:%M")
+            until_warn_after_hours_s      = pause_warn_after_hours_s - work_elapsed
+            if total_pause_done == 0 and until_warn_after_hours_s > 0:
                 self.break_deadline_label.config(
                     text=f"⏰ Break by  {deadline_str}")
-            if (0 <= until_6h <= warn_before_s) and not self._notified_pause_warn and total_pause_done == 0:
+            if (0 <= until_warn_after_hours_s <= warn_before_s) and not self._notified_pause_warn and total_pause_done == 0:
                 self._notified_pause_warn = True
-                mins_left = max(1, int(math.ceil(until_6h / 60)))
+                mins_left = max(1, int(math.ceil(until_warn_after_hours_s / 60)))
                 self._fire_notify(
                     "⏰ Break needed!",
                     f"You have {mins_left} Minutes left until you worked for 6 hours – "
                     f"You need a break!")
-            if work_elapsed < six_hours_s - warn_before_s:
+            if work_elapsed < pause_warn_after_hours_s - warn_before_s:
                 self._notified_pause_warn = False
 
             # ── Leave tile ────────────────────────────────────────────────────
-            self.you_can_go_in.config(
-                text=f"Leave at  {leave_str}")
+            self.you_can_go_in.config(text=f"Leave at  {leave_str}")
 
             ot_color = Color.OVERTIME.value if ot_at_leave >= 0 else Color.NEGATIVE.value
             self.leave_overtime_label.config(
@@ -2285,9 +2078,8 @@ class TrackMe:
                 fg=ot_color)
 
             if saldo_at_leave is not None:
+                sal_h, sal_m, _ = seconds_to_hms(saldo_at_leave)
                 sal_sign  = "+" if saldo_at_leave >= 0 else "-"
-                sal_h     = int(abs(saldo_at_leave)) // 3600
-                sal_m     = (int(abs(saldo_at_leave)) % 3600) // 60
                 sal_color = Color.OVERTIME.value if saldo_at_leave >= 0 else Color.NEGATIVE.value
                 self.leave_sub_label.config(
                     text=f"Balance at leave:  {sal_sign}{sal_h:02d}:{sal_m:02d} h",
