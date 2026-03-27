@@ -2,6 +2,7 @@
 A dark-themed desktop time tracker for Windows, built with Python and Tkinter.  
 Designed for use with the **NovaTime** web-based time tracking system, but works fully standalone without it.
 
+<img width="559" height="508" alt="Screenshot 2026-03-27 122830" src="https://github.com/user-attachments/assets/ddc1826d-43ee-4f2a-90ce-286d77f68d87" />
 <img width="555" height="505" alt="Screenshot 2026-03-26 160015" src="https://github.com/user-attachments/assets/efadead5-15c7-450e-9e2c-eb2ebcfa9c44" />
 
 
@@ -18,10 +19,11 @@ Designed for use with the **NovaTime** web-based time tracking system, but works
 - **Overtime indicator** — shows current OT with correct ±sign in the Leave tile, colour-coded green/red
 - **AutoOvertime Planner** — plan how to work down your balance over N days with arrive/leave times per day
 - **User Journal** — fetch and display your full monthly time-tracking journal in a scrollable table, with a refresh button (NovaTime-only feature)
-- **Business Trip** tracking (Dienstgang)
+- **Business Trip** tracking
 - **System tray** integration with context menu
 - **Desktop notifications** for goal reached, pause complete and upcoming mandatory break — can be disabled per session
 - **NovaTime API integration** — automatically books via browser automation (Playwright + Edge/Chrome)
+- **Encrypted credentials (DPAPI-backed encryption)
 - **Theme switcher** — choose between Dark Mode, Dracula and Blue Theme; applies instantly without restart
 - Save files stored in a dedicated `save/` folder — works both as script and compiled exe
 
@@ -37,7 +39,7 @@ Designed for use with the **NovaTime** web-based time tracking system, but works
 ### Install dependencies
 
 ```bash
-pip install pystray pillow playwright plyer
+pip install tkinter pystray pillow playwright plyer pywin32
 playwright install chromium
 ```
 
@@ -134,6 +136,7 @@ Open the **🔌 API** window and enter:
 | Show NovaTime Window | Uncheck for headless (invisible) browser automation |
 
 > NovaTime integration requires Microsoft Edge or Google Chrome to be installed.
+> Credentials are saved encrypted and dependant on the current users os, which means no one else can access the data even if he has the .lock file.
 
 ---
 
@@ -161,8 +164,9 @@ The right panel shows a card for each day with exact arrive, leave, work and pau
 | `tkinter` | UI framework (stdlib) |
 | `pystray` | System tray icon |
 | `Pillow` | Image handling for tray icon |
-| `plyer` | Desktop notifications |
 | `playwright` | Browser automation for NovaTime |
+| `plyer` | Desktop notifications |
+| `pywin32` | DPAPI-backed encryption |
 
 ---
 
